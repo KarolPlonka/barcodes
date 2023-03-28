@@ -8,29 +8,16 @@ const Stack = createNativeStackNavigator();
 
 const testBARCODES = [
   {
-    id: 1,
     title: 'BIEDRONKA',
-    barcode: '00000000033222T',
+    barcode: '978020137962',
   },
   {
-    id: 2,
     title: 'ORLEN',
-    barcode: 'KURCZAKIZIEMANKI',
+    barcode: '123456789123',
   },
   {
-    id: 3,
     title: 'LIDL',
-    barcode: '0000002021954Q',
-  },
-  {
-    id: 4,
-    title: 'LIDL',
-    barcode: '0000002021954Q',
-  },
-  {
-    id: 5,
-    title: 'LIDL',
-    barcode: '0000002021954Q',
+    barcode: '223456789123',
   },
 ];
 

@@ -7,10 +7,7 @@ import {
     Text,
     TouchableOpacity,
     Dimensions,
-    Image,
-    Button,
     View,
-    Pressable,
     RefreshControl,
 } from 'react-native';
 
@@ -23,7 +20,7 @@ const Item = ({ item, onPress, backgroundColor, textColor }) => (
         <Text style={[styles.title, { color: textColor }]}>{item.title}</Text>
         <Barcode
             style={backgroundColor = { backgroundColor }}
-            format="CODE128B"
+            format="EAN13"
             value={item.barcode}
             text={item.barcode}
             maxWidth={Dimensions.get('window').width - 100}
@@ -43,10 +40,9 @@ const getData = async () => {
 
 export default function MainScreen({ navigation, route }) {
 
-    const [BARCODES, setBARCODES] = useState([]);
-
-    useEffect(() => {
-        console.log("refresh")
+    const [BARCODES, setBARCODES] = useState();
+    
+    const loadBarcodes = () => {
         const getDataAndSetState = async () => {
             const jsonData = await getData();
             if (jsonData) {
@@ -54,30 +50,28 @@ export default function MainScreen({ navigation, route }) {
             }
         };
         getDataAndSetState();
-    }, []);
+    };
+    
+    useEffect(() => {loadBarcodes()}, []);
 
-    //console.log(BARCODES);
 
-    const [selectedId, setSelectedId] = useState();
-
+    const [selectedBarcode, setSelectedBarcode] = useState();
     const [refreshing, setRefreshing] = useState(false);
 
     const onRefresh = React.useCallback(() => {
       setRefreshing(true);
-
-      
-
+      loadBarcodes();
       setRefreshing(false);
     }, []);
 
     const renderItem = ({ item }) => {
-        const backgroundColor = item.id === selectedId ? '#6e3b6e' : '#f9c2ff';
-        const color = item.id === selectedId ? 'white' : 'black';
+        const backgroundColor = item.barcode === selectedBarcode ? '#6e3b6e' : '#f9c2ff';
+        const color = item.barcode === selectedBarcode ? 'white' : 'black';
 
         return (
             <Item
                 item={item}
-                onPress={() => setSelectedId(item.id)}
+                onPress={() => setSelectedBarcode(item.barcode)}
                 backgroundColor={backgroundColor}
                 textColor={color}
             />
@@ -90,8 +84,8 @@ export default function MainScreen({ navigation, route }) {
                 refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
                 data={BARCODES}
                 renderItem={renderItem}
-                keyExtractor={item => item.id}
-                extraData={selectedId}
+                keyExtractor={item => item.barcode}
+                extraData={selectedBarcode}
             />
             <View style={{ position: 'absolute', bottom: 20, right: 20, alignSelf: 'flex-end' }}>
                 <TouchableOpacity style={styles.addButton} onPress={() => navigation.navigate("AddScreen")}>

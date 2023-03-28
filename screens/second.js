@@ -6,7 +6,6 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 export default function AddScreen() {
   const [hasPermission, setHasPermission] = useState(null);
   const [scanned, setScanned] = useState(false);
-  const [text, setText] = useState('Not yet scanned')
   const [name, setName] = useState('')
   const [barcodeValue, setBarcodeValue] = useState('');
 
@@ -25,10 +24,10 @@ export default function AddScreen() {
   // What happens when we scan the bar code
   const handleBarCodeScanned = ({ type, data }) => {
     setScanned(true);
-    setText(data)
     setBarcodeValue(data)
     console.log('Type: ' + type + '\nData: ' + data)
   };
+
 
   const appendData = async (newElement) => {
     let myArray = [];
@@ -45,11 +44,10 @@ export default function AddScreen() {
   };
   
   function addBarcode(name, data) {
-    appendData(  {
-        id: 69,
-        title: {name},
-        barcode: {data},
-      },)
+    appendData( {
+        title: name,
+        barcode: data,
+      })
 
     console.log('Name: ' + name + '\tData: ' + data)
   };
