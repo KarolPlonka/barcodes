@@ -11,6 +11,7 @@ import {
     RefreshControl,
     Alert,
 } from "react-native";
+import colors from "../assets/colors";
 import Barcode from "@kichiyaki/react-native-barcode-generator";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
