@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from "react";
 import {
     FlatList,
     SafeAreaView,
@@ -9,39 +9,61 @@ import {
     Dimensions,
     View,
     RefreshControl,
-} from 'react-native';
+    Alert,
+} from "react-native";
+import Barcode from "@kichiyaki/react-native-barcode-generator";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
-import Barcode from '@kichiyaki/react-native-barcode-generator';
-import AsyncStorage from '@react-native-async-storage/async-storage';
-
-
-const Item = ({ item, onPress, backgroundColor, textColor }) => (
-    <TouchableOpacity onPress={onPress} style={[styles.item, { backgroundColor }]}>
-        <Text style={[styles.title, { color: textColor }]}>{item.title}</Text>
-        <Barcode
-            style={backgroundColor = { backgroundColor }}
+const Item = ({ item, onPress, onDelete, backgroundColor, textColor, selectedBarcode }) => {
+    const isSelected = item.barcode === selectedBarcode;
+  
+    return (
+      <TouchableOpacity onPress={onPress} style={[styles.item, { backgroundColor }]}>
+        <View style={styles.titleWrapper}>
+          <Text style={styles.title}>{item.title}</Text>
+        </View>
+  
+        <View style={styles.barcodeWrapper}>
+          <Barcode
             format="EAN13"
             value={item.barcode}
             text={item.barcode}
             maxWidth={Dimensions.get('window').width - 100}
-        />
-    </TouchableOpacity>
-);
+            background={backgroundColor}
+            color={textColor}
+          />
+        </View>
+  
+        {isSelected && (
+          <TouchableOpacity onPress={onDelete} style={styles.deleteButton}>
+            <Text style={styles.deleteButtonText}>X</Text>
+          </TouchableOpacity>
+        )}
+      </TouchableOpacity>
+    );
+  };
+  
 
+
+  
 const getData = async () => {
     try {
-        console.log("refreshed data")
-        const jsonValue = await AsyncStorage.getItem('barcodes')
+        console.log("refreshed data");
+        const jsonValue = await AsyncStorage.getItem("barcodes");
+        console.log(jsonValue);
         return jsonValue !== null ? JSON.parse(jsonValue) : null;
+        
     } catch (e) {
-        console.log(e)
+        console.log(e);
     }
-}
+};
 
 export default function MainScreen({ navigation, route }) {
-
     const [BARCODES, setBARCODES] = useState();
+    const [selectedBarcode, setSelectedBarcode] = useState(null);
+    const [refreshing, setRefreshing] = useState(false);
     
+
     const loadBarcodes = () => {
         const getDataAndSetState = async () => {
             const jsonData = await getData();
@@ -51,71 +73,175 @@ export default function MainScreen({ navigation, route }) {
         };
         getDataAndSetState();
     };
-    
-    useEffect(() => {loadBarcodes()}, []);
+
+    useEffect(() => {
+        loadBarcodes();
+    }, []);
+
+    const deleteBarcode = (barcode) => {
+        Alert.alert(
+            "Usuń kartę",
+            "Czy jesteś pewny/a, że chcesz usunąć tę kartę?",
+            [
+                {
+                    text: "Wyjdź",
+                    onPress: () => console.log("Wyjście..."),
+                    style: "cancel"
+                },
+                {
+                    text: "Usuń",
+                    onPress: async () => {
+                        try {
+                            const barcodes = await AsyncStorage.getItem("barcodes");
+                            if (barcodes !== null) {
+                                const updatedBarcodes = JSON.parse(barcodes).filter(
+                                    (item) => item.barcode !== barcode
+                                );
+                                await AsyncStorage.setItem("barcodes", JSON.stringify(updatedBarcodes));
+                                setBARCODES(updatedBarcodes);
+                            }
+                        } catch (e) {
+                            console.log(e);
+                        }
+                    },
+                    style: "destructive"
+                }
+            ]
+        );
+    };
 
 
-    const [selectedBarcode, setSelectedBarcode] = useState();
-    const [refreshing, setRefreshing] = useState(false);
 
     const onRefresh = React.useCallback(() => {
-      setRefreshing(true);
-      loadBarcodes();
-      setRefreshing(false);
+        setRefreshing(true);
+        loadBarcodes();
+        setRefreshing(false);
     }, []);
 
     const renderItem = ({ item }) => {
-        const backgroundColor = item.barcode === selectedBarcode ? '#6e3b6e' : '#f9c2ff';
-        const color = item.barcode === selectedBarcode ? 'white' : 'black';
-
+        const backgroundColor = item.barcode === selectedBarcode ? '#6e3b6e' : 'white';
+        const color = item.barcode === selectedBarcode ? 'white' : '#6e3b6e';
+      
         return (
-            <Item
-                item={item}
-                onPress={() => setSelectedBarcode(item.barcode)}
-                backgroundColor={backgroundColor}
-                textColor={color}
-            />
+          <Item
+            item={item}
+            onPress={() => setSelectedBarcode(selectedBarcode === item.barcode ? null : item.barcode)}
+            onDelete={() => deleteBarcode(item.barcode)}
+            backgroundColor={backgroundColor}
+            textColor={color}
+            selectedBarcode={selectedBarcode}
+          />
         );
-    };
+      };
+
+      
 
     return (
         <SafeAreaView style={styles.container}>
             <FlatList
-                refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
+                refreshControl={
+                    <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+                }
                 data={BARCODES}
                 renderItem={renderItem}
-                keyExtractor={item => item.barcode}
+                keyExtractor={(item) => item.barcode}
                 extraData={selectedBarcode}
             />
-            <View style={{ position: 'absolute', bottom: 20, right: 20, alignSelf: 'flex-end' }}>
-                <TouchableOpacity style={styles.addButton} onPress={() => navigation.navigate("AddScreen")}>
-                    <Text>+</Text>
+            <View
+                style={styles.addButtonWrapper}
+            >
+                <TouchableOpacity
+                    style={styles.addButton}
+                    onPress={() => navigation.navigate("AddScreen")}
+                >
+                    <Text style={styles.addButtonText}>+</Text>
                 </TouchableOpacity>
             </View>
         </SafeAreaView>
     );
-};
+}
 
 const styles = StyleSheet.create({
     container: {
         flex: 1,
+        backgroundColor: "#f0e6d2",
         marginTop: StatusBar.currentHeight || 0,
     },
     item: {
+        backgroundColor: "black",
         padding: 20,
         marginVertical: 8,
         marginHorizontal: 16,
+        borderRadius: 10,
+        shadowColor: "#000",
+        shadowOffset: {
+            width: 0,
+            height: 2,
+        },
+        shadowOpacity: 0.25,
+        shadowRadius: 3.84,
+        elevation: 5,
     },
     title: {
-        fontSize: 32,
+        color: "black",
+        fontSize: 24,
+        fontWeight: "bold",
+        textAlign: "center",
     },
     addButton: {
-        alignItems: 'center',
-        justifyContent: 'center',
         width: 60,
         height: 60,
         borderRadius: 100,
-        elevation: 3,
-        backgroundColor: '#fff',
-    }
+        backgroundColor: "#6e3b6e",
+        justifyContent: "center",
+        alignItems: "center",
+        shadowColor: "#000",
+        shadowOffset: {
+            width: 0,
+            height: 2,
+        },
+        shadowOpacity: 0.25,
+        shadowRadius: 3.84,
+        elevation: 5,
+    },
+    addButtonText: {
+        color: "white",
+        fontSize: 36,
+    },
+    deleteButton: {
+        position: "absolute",
+        top: 10,
+        right: 10,
+        width: 30,
+        height: 30,
+        borderRadius: 100,
+        backgroundColor: "white",
+        justifyContent: "center",
+        alignItems: "center",
+        shadowColor: "#000",
+        shadowOffset: {
+            width: 0,
+            height: 2,
+        },
+        shadowOpacity: 0.25,
+        shadowRadius: 3.84,
+        elevation: 5,
+    },
+    deleteButtonText: {
+        color: "#6e3b6e",
+        fontSize: 16,
+        fontWeight: "bold",
+    },
+    titleWrapper: {
+        marginBottom: 10,
+    },
+    barcodeWrapper: {
+        marginBottom: 10,
+    },
+    addButtonWrapper: {
+        position: "absolute",
+        bottom: 20,
+        right: 20,
+        alignSelf: "flex-end",
+    },
 });

@@ -21,13 +21,6 @@ const testBARCODES = [
   },
 ];
 
-// const currentValue = await AsyncStorage.getItem('barcodes')
-
-    
-
-// const jsonValue = JSON.stringify(value)
-// await AsyncStorage.setItem('barcodes', jsonValue)
-
 const storeData = async () => {
   try {
     const data = await AsyncStorage.getItem('barcodes')
@@ -50,10 +43,16 @@ export default function App() {
         <Stack.Screen 
           name="MainScreen"
           component={MainScreen}
+          options={{
+            headerShown: false,
+          }}
         />
         <Stack.Screen 
           name="AddScreen"
           component={AddScreen}
+          options={{
+            headerShown: false,
+          }}
         />
       </Stack.Navigator>
     </NavigationContainer>

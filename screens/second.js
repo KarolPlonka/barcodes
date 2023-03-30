@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Text, View, StyleSheet, Button, Pressable, TextInput } from 'react-native';
+import { Text, View, StyleSheet, Button, Pressable, TextInput, TouchableOpacity, Alert } from 'react-native';
 import { BarCodeScanner } from 'expo-barcode-scanner';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
@@ -25,7 +25,7 @@ export default function AddScreen() {
   const handleBarCodeScanned = ({ type, data }) => {
     setScanned(true);
     setBarcodeValue(data)
-    console.log('Type: ' + type + '\nData: ' + data)
+    console.log('Typ: ' + type + '\n Kod kreskowy: ' + data)
   };
 
 
@@ -37,19 +37,26 @@ export default function AddScreen() {
         myArray = JSON.parse(data);
       }
       myArray.push(newElement);
-      await AsyncStorage.setItem('barcodes', JSON.stringify(myArray));    
+      await AsyncStorage.setItem('barcodes', JSON.stringify(myArray));
     } catch (error) {
       console.error(error);
     }
   };
-  
-  function addBarcode(name, data) {
-    appendData( {
-        title: name,
-        barcode: data,
-      })
 
-    console.log('Name: ' + name + '\tData: ' + data)
+  function addBarcode(name, data) {
+    if (!name || !data) {
+      Alert.alert(
+        "Błąd",
+        "Wypełnij wszystkie pola",
+      )
+      return;
+    }
+    appendData({
+      title: name,
+      barcode: data,
+    })
+
+    console.log('Nazwa: ' + name + '\tData: ' + data)
   };
 
 
@@ -57,13 +64,13 @@ export default function AddScreen() {
   if (hasPermission === null) {
     return (
       <View style={styles.container}>
-        <Text>Requesting for camera permission</Text>
+        <Text style={styles.text}>Requesting for camera permission</Text>
       </View>)
   }
   if (hasPermission === false) {
     return (
       <View style={styles.container}>
-        <Text style={{ margin: 10 }}>No access to camera</Text>
+        <Text style={styles.text}>No access to camera</Text>
         <Button title={'Allow Camera'} onPress={() => askForCameraPermission()} />
       </View>)
   }
@@ -78,24 +85,28 @@ export default function AddScreen() {
           style={{ height: 400, width: 400 }} />
       </View>
 
-      {scanned && <Button title={'Scan again?'} onPress={() => setScanned(false)} color='black' />}
+      {scanned && <TouchableOpacity style={styles.button} onPress={() => setScanned(false)}>
+        <Text style={styles.text}>Kliknij, aby zeskanować ponownie</Text>
+      </TouchableOpacity>}
 
-      <TextInput 
+      <TextInput
         style={styles.input}
         value={barcodeValue}
         onChangeText={setBarcodeValue}
         placeholder="barcode"
+        placeholderTextColor="#9E9E9E"
       />
 
-      <TextInput 
+      <TextInput
         style={styles.input}
         value={name}
         onChangeText={setName}
         placeholder="name"
+        placeholderTextColor="#9E9E9E"
       />
 
-      <Pressable style = {styles.button} onPress={() => addBarcode(name, barcodeValue)}>
-        <Text>Add</Text>
+      <Pressable style={styles.pressable} onPress={() => addBarcode(name, barcodeValue)}>
+        <Text style={styles.text}>Dodaj</Text>
       </Pressable>
     </View>
 
@@ -105,7 +116,7 @@ export default function AddScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
+    backgroundColor: '#f0e6d2',
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -113,26 +124,50 @@ const styles = StyleSheet.create({
     height: 40,
     margin: 12,
     borderWidth: 1,
-    borderColor: 'grey',
-    width: 200,
+    borderColor: '#CCCCCC',
+    borderRadius: 4,
+    backgroundColor: '#FFFFFF',
+    width: '80%',
+    color: '#000000',
     padding: 10,
   },
   barcodebox: {
     alignItems: 'center',
     justifyContent: 'center',
-    height: 150,
-    width: 400,
+    width: '80%',
+    height: '40%',
     overflow: 'hidden',
+    borderRadius: 4,
+    backgroundColor: '#FFFFFF',
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+    elevation: 5,
+    marginBottom: 20,
   },
   button: {
     alignItems: 'center',
     justifyContent: 'center',
-    paddingVertical: 12,
-    paddingHorizontal: 32,
-    width: 200,
+    margin: 10,
+    padding: 10,
     borderRadius: 4,
-    elevation: 3,
-    marginVertical: 30,
-    backgroundColor: 'black',
+    backgroundColor: '#6e3b6e',
+  },
+  pressable: {
+    backgroundColor: '#6e3b6e',
+    paddingHorizontal: 50,
+    paddingVertical: 10,
+    borderRadius: 4,
+    margin: 10,
+  },
+  text: {
+    color: '#FFFFFF',
+    fontWeight: 'bold',
+    fontSize: 16,
   }
 });
+
