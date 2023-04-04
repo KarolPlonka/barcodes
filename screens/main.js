@@ -1,6 +1,5 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import {
-    FlatList,
     SafeAreaView,
     StatusBar,
     StyleSheet,
@@ -11,16 +10,25 @@ import {
     RefreshControl,
     Alert,
 } from "react-native";
+
+//dragabble
+import DraggableFlatList, {
+    ScaleDecorator,
+} from "react-native-draggable-flatlist";
+import { theme, ThemeProvider, ListItem } from "react-native-design-system";
+
 import colors from "../assets/colors";
 import Barcode from "@kichiyaki/react-native-barcode-generator";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import SortableList from 'react-native-sortable-list';
+
 
 const Item = ({ item, onPress, onDelete, backgroundColor, textColor, selectedBarcode }) => {
     const isSelected = item.barcode === selectedBarcode;
   
     return (
-      <TouchableOpacity onPress={onPress} style={[styles.item, { backgroundColor }]}>
-        <View style={styles.titleWrapper}>
+      <TouchableOpacity onPress={onPress}  style={[styles.item, { backgroundColor }]}>
+        <View style={styles.titleWrapper} >
           <Text style={styles.title}>{item.title}</Text>
         </View>
   
@@ -60,7 +68,7 @@ const getData = async () => {
 };
 
 export default function MainScreen({ navigation, route }) {
-    const [BARCODES, setBARCODES] = useState();
+    const [BARCODES, setBARCODES] = useState([]);
     const [selectedBarcode, setSelectedBarcode] = useState(null);
     const [refreshing, setRefreshing] = useState(false);
     
@@ -119,35 +127,39 @@ export default function MainScreen({ navigation, route }) {
         setRefreshing(false);
     }, []);
 
-    const renderItem = ({ item }) => {
+    const renderItem = ({ item, drag, isActive }) => {
         const backgroundColor = item.barcode === selectedBarcode ? '#6e3b6e' : 'white';
         const color = item.barcode === selectedBarcode ? 'white' : '#6e3b6e';
       
         return (
-          <Item
-            item={item}
-            onPress={() => setSelectedBarcode(selectedBarcode === item.barcode ? null : item.barcode)}
-            onDelete={() => deleteBarcode(item.barcode)}
-            backgroundColor={backgroundColor}
-            textColor={color}
-            selectedBarcode={selectedBarcode}
-          />
+            <ListItem onLongPress={drag} disabled={isActive}>
+                {item.title}
+            </ListItem>
         );
-      };
+    };
 
-      
+    
+    
+    const renderRow = ({ data, active }) => {
+        console.log("row: ", data.title)
+        return (
+            <View>
+            <Text >{data.title}</Text>
+            </View>
+        );
+    };
 
     return (
         <SafeAreaView style={styles.container}>
-            <FlatList
-                refreshControl={
-                    <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
-                }
+            <ThemeProvider theme={theme}>
+            <DraggableFlatList
                 data={BARCODES}
-                renderItem={renderItem}
+                onDragEnd={({ data }) => setBARCODES(data)} 
                 keyExtractor={(item) => item.barcode}
-                extraData={selectedBarcode}
-            />
+                renderItem={renderItem}
+                refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
+            />  
+            </ThemeProvider>
             <View
                 style={styles.addButtonWrapper}
             >
