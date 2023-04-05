@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect } from "react";
 import {
   SafeAreaView,
   StatusBar,
@@ -7,9 +7,8 @@ import {
   TouchableOpacity,
   Dimensions,
   View,
-  RefreshControl,
-  Alert,
   ScrollView,
+  Alert,
 } from "react-native";
 
 import DraggableFlatList, {
@@ -18,6 +17,7 @@ import DraggableFlatList, {
 import colors from "../assets/colors";
 import Barcode from "@kichiyaki/react-native-barcode-generator";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { Ionicons } from '@expo/vector-icons'; 
 
 const Item = ({
   item,
@@ -37,10 +37,17 @@ const Item = ({
       <TouchableOpacity
         onPress={onPress}
         onLongPress={drag}
-        style={[styles.item, { backgroundColor: isHighlighted ? '#6e3b6e' : backgroundColor }]}
+        style={[
+          styles.item,
+          { backgroundColor: isHighlighted ? "#6e3b6e" : backgroundColor },
+        ]}
       >
         <View style={styles.titleWrapper}>
-          <Text style={[styles.title, { color: isHighlighted ? 'white' : 'black' }]}>{item.title}</Text>
+          <Text
+            style={[styles.title, { color: isHighlighted ? "white" : "black" }]}
+          >
+            {item.title}
+          </Text>
         </View>
 
         <View style={styles.barcodeWrapper}>
@@ -49,8 +56,8 @@ const Item = ({
             value={item.barcode}
             text={item.barcode}
             maxWidth={Dimensions.get("window").width - 100}
-            background={isHighlighted ? '#6e3b6e' : backgroundColor}
-            color={isHighlighted ? 'white' : textColor}
+            background={isHighlighted ? "#6e3b6e" : backgroundColor}
+            color={isHighlighted ? "white" : textColor}
           />
         </View>
 
@@ -66,19 +73,16 @@ const Item = ({
 
 const getData = async () => {
   try {
-    console.log("refreshed data");
     const jsonValue = await AsyncStorage.getItem("barcodes");
-    console.log(jsonValue);
     return jsonValue !== null ? JSON.parse(jsonValue) : [];
   } catch (e) {
     console.log(e);
   }
 };
 
-export default function MainScreen({ navigation, route }) {
-  const [BARCODES, setBARCODES] = useState([]);
-  const [selectedBarcode, setSelectedBarcode] = useState(null);
-  const [refreshing, setRefreshing] = useState(false);
+export default function MainScreen({ navigation }) {
+    const [BARCODES, setBARCODES] = useState([]);
+    const [selectedBarcode, setSelectedBarcode] = useState(null);
 
   const loadBarcodes = () => {
     const getDataAndSetState = async () => {
@@ -125,13 +129,7 @@ export default function MainScreen({ navigation, route }) {
     );
   };
 
-  const onRefresh = useCallback(async () => {
-    setRefreshing(true);
-    loadBarcodes();
-    setRefreshing(false);
-  }, []);
-
-  const renderItem = ({ item, drag, isActive }) => {
+  const renderItem = ({ item, drag }) => {
     const backgroundColor =
       item.barcode === selectedBarcode ? "#6e3b6e" : "white";
     const color = item.barcode === selectedBarcode ? "white" : "#6e3b6e";
@@ -164,31 +162,30 @@ export default function MainScreen({ navigation, route }) {
     setBARCODES(data);
   };
 
+  function refreshPage() {
+    loadBarcodes();
+  }
+
   return (
     <SafeAreaView style={styles.container}>
-      <ScrollView
-        contentContainerStyle={styles.scrollViewContent}
-        refreshControl={
-          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
-        }
-      >
+      <View style={styles.refreshButtonWrapper}>
+        <TouchableOpacity onPress={refreshPage}>
+            <Ionicons name="refresh-circle" size={24} color="black" />
+        </TouchableOpacity>
+      </View>
+        <ScrollView>
+
         <View style={{ flex: 1 }}>
-          {BARCODES.length > 0 ? (
             <DraggableFlatList
-              data={BARCODES}
-              onDragEnd={handleDragDrop}
-              keyExtractor={(item) => item.barcode}
-              renderItem={renderItem}
+                data={BARCODES}
+                renderItem={renderItem}
+                keyExtractor={(item) => `draggable-item-${item.barcode}`}
+                onDragEnd={({ data }) => handleDragDrop({ data })}
             />
-          ) : (
-            <View style={styles.emptyContainer}>
-              <Text style={styles.emptyText}>
-                No barcodes available. Pull to refresh.
-              </Text>
-            </View>
-          )}
         </View>
-      </ScrollView>
+        </ScrollView>
+
+
       <View style={styles.addButtonWrapper}>
         <TouchableOpacity
           style={styles.addButton}
@@ -202,6 +199,21 @@ export default function MainScreen({ navigation, route }) {
 }
 
 const styles = StyleSheet.create({
+container: {
+    flex: 1,
+    backgroundColor: "#f0e6d2",
+    marginTop: StatusBar.currentHeight || 0,
+},
+refreshButtonWrapper: {
+    alignItems: "center",
+    marginVertical: 5,
+},
+refreshButton: {
+    width: 50,
+    height: 50,
+    justifyContent: "center",
+    alignItems: "center",
+},
   container: {
     flex: 1,
     backgroundColor: "#f0e6d2",
