@@ -3,11 +3,15 @@ import { Text, View, StyleSheet, Button, Pressable, TextInput, TouchableOpacity,
 import { BarCodeScanner } from 'expo-barcode-scanner';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
+const barcodeTypes = new Map([
+  [32, 'EAN13'],
+])
+
 export default function AddScreen() {
   const [hasPermission, setHasPermission] = useState(null);
   const [scanned, setScanned] = useState(false);
   const [name, setName] = useState('')
-  const [barcodeValue, setBarcodeValue] = useState('');
+  const [barcode, setBarcode] = useState({ barcode: '', type: '' });
 
   const askForCameraPermission = () => {
     (async () => {
@@ -24,8 +28,8 @@ export default function AddScreen() {
   // What happens when we scan the bar code
   const handleBarCodeScanned = ({ type, data }) => {
     setScanned(true);
-    setBarcodeValue(data)
-    console.log('Typ: ' + type + '\n Kod kreskowy: ' + data)
+    setBarcode({ barcode: data, type: type });
+    console.log('Typ: ' + type + '\t Kod kreskowy: ' + data);
   };
 
 
@@ -43,20 +47,28 @@ export default function AddScreen() {
     }
   };
 
-  function addBarcode(name, data) {
-    if (!name || !data) {
+
+  function addBarcode(name, barcode) {
+    if (!name || !barcode.barcode) {
       Alert.alert(
         "Błąd",
         "Wypełnij wszystkie pola",
       )
       return;
     }
+
+    if (!barcodeTypes.has(barcode.type)){
+      Alert.alert("Nieobsługiwany typ kodu kreskowego")
+      return;
+    }
+
     appendData({
       title: name,
-      barcode: data,
+      barcode: barcode.barcode,
+      type: barcodeTypes.get(barcode.type),
     })
 
-    console.log('Nazwa: ' + name + '\tData: ' + data)
+    console.log('Nazwa: ' + name + '\tData: ' + barcode.barcode + '\Type: ' + barcode.type)
   };
 
 
@@ -91,8 +103,8 @@ export default function AddScreen() {
 
       <TextInput
         style={styles.input}
-        value={barcodeValue}
-        onChangeText={setBarcodeValue}
+        value={barcode.barcode}
+        onChangeText={setBarcode}
         placeholder="barcode"
         placeholderTextColor="#9E9E9E"
       />
@@ -105,7 +117,7 @@ export default function AddScreen() {
         placeholderTextColor="#9E9E9E"
       />
 
-      <Pressable style={styles.pressable} onPress={() => addBarcode(name, barcodeValue)}>
+      <Pressable style={styles.pressable} onPress={() => addBarcode(name, barcode)}>
         <Text style={styles.text}>Dodaj</Text>
       </Pressable>
     </View>

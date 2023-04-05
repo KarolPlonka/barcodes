@@ -11,26 +11,32 @@ const testBARCODES = [
   { 
     title: 'BIEDRONKA',
     barcode: '978020137962',
+    type: 'EAN13'
   },
   {
     title: 'ORLEN',
     barcode: '123456789123',
+    type: 'EAN13'
   },
   {
     title: 'LIDL',
     barcode: '223456789123',
+    type: 'EAN13'
   },
   {
     title: 'TESCO',
     barcode: '443456789123',
+    type: 'EAN13'
   },
   {
     title: 'TESTCO',
     barcode: '553456789123',
+    type: 'EAN13'
   },
   {
     title: 'SHEESH',
     barcode: '663456789123',
+    type: 'EAN13'
   },
 ];
 

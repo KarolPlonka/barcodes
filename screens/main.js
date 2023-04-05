@@ -30,7 +30,7 @@ const Item = ({ item, drag, onPress, onDelete, backgroundColor, textColor, selec
 
                 <View style={styles.barcodeWrapper}>
                     <Barcode
-                        format="EAN13"
+                        format={item.type}
                         value={item.barcode}
                         text={item.barcode}
                         maxWidth={Dimensions.get('window').width - 100}
@@ -142,14 +142,14 @@ export default function MainScreen({ navigation, route }) {
     };
 
     const hadnleDragDrop = ({ data }) => {
-        const storeData = async () => {
+        const storeData = async (data) => {
             try {
                 await AsyncStorage.setItem('barcodes', JSON.stringify(data))
             } catch (e) {
                 console.log(e)
             }
             }
-        storeData()
+        storeData(data)
         setBARCODES(data)
     };
 
