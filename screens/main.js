@@ -11,44 +11,41 @@ import {
     Alert,
 } from "react-native";
 
-//dragabble
-import DraggableFlatList, {
-    ScaleDecorator,
-} from "react-native-draggable-flatlist";
-import { theme, ThemeProvider, ListItem } from "react-native-design-system";
-
+import DraggableFlatList, {ScaleDecorator,} from "react-native-draggable-flatlist";
 import colors from "../assets/colors";
 import Barcode from "@kichiyaki/react-native-barcode-generator";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import SortableList from 'react-native-sortable-list';
 
 
-const Item = ({ item, onPress, onDelete, backgroundColor, textColor, selectedBarcode }) => {
+
+const Item = ({ item, drag, onPress, onDelete, backgroundColor, textColor, selectedBarcode }) => {
     const isSelected = item.barcode === selectedBarcode;
   
     return (
-      <TouchableOpacity onPress={onPress}  style={[styles.item, { backgroundColor }]}>
-        <View style={styles.titleWrapper} >
-          <Text style={styles.title}>{item.title}</Text>
-        </View>
-  
-        <View style={styles.barcodeWrapper}>
-          <Barcode
-            format="EAN13"
-            value={item.barcode}
-            text={item.barcode}
-            maxWidth={Dimensions.get('window').width - 100}
-            background={backgroundColor}
-            color={textColor}
-          />
-        </View>
-  
-        {isSelected && (
-          <TouchableOpacity onPress={onDelete} style={styles.deleteButton}>
-            <Text style={styles.deleteButtonText}>X</Text>
-          </TouchableOpacity>
-        )}
-      </TouchableOpacity>
+        <ScaleDecorator>
+            <TouchableOpacity onPress={onPress} onLongPress={drag} style={styles.item}>
+                <View style={styles.titleWrapper} >
+                    <Text style={styles.title}>{item.title}</Text>
+                </View>
+
+                <View style={styles.barcodeWrapper}>
+                    <Barcode
+                        format="EAN13"
+                        value={item.barcode}
+                        text={item.barcode}
+                        maxWidth={Dimensions.get('window').width - 100}
+                        background={backgroundColor}
+                        color={textColor}
+                    />
+                </View>
+
+                {isSelected && (
+                    <TouchableOpacity onPress={onDelete} style={styles.deleteButton}>
+                        <Text style={styles.deleteButtonText}>X</Text>
+                    </TouchableOpacity>
+                )}
+            </TouchableOpacity>
+        </ScaleDecorator>
     );
   };
   
@@ -130,36 +127,41 @@ export default function MainScreen({ navigation, route }) {
     const renderItem = ({ item, drag, isActive }) => {
         const backgroundColor = item.barcode === selectedBarcode ? '#6e3b6e' : 'white';
         const color = item.barcode === selectedBarcode ? 'white' : '#6e3b6e';
-      
+
         return (
-            <ListItem onLongPress={drag} disabled={isActive}>
-                {item.title}
-            </ListItem>
-        );
+            <Item
+              item={item}
+              drag={drag}
+              onPress={() => setSelectedBarcode(selectedBarcode === item.barcode ? null : item.barcode)}
+              onDelete={() => deleteBarcode(item.barcode)}
+              backgroundColor={backgroundColor}
+              textColor={color}
+              selectedBarcode={selectedBarcode}
+            />
+          );
     };
 
-    
-    
-    const renderRow = ({ data, active }) => {
-        console.log("row: ", data.title)
-        return (
-            <View>
-            <Text >{data.title}</Text>
-            </View>
-        );
+    const hadnleDragDrop = ({ data }) => {
+        const storeData = async () => {
+            try {
+                await AsyncStorage.setItem('barcodes', JSON.stringify(data))
+            } catch (e) {
+                console.log(e)
+            }
+            }
+        storeData()
+        setBARCODES(data)
     };
 
     return (
         <SafeAreaView style={styles.container}>
-            <ThemeProvider theme={theme}>
             <DraggableFlatList
                 data={BARCODES}
-                onDragEnd={({ data }) => setBARCODES(data)} 
+                onDragEnd={hadnleDragDrop} 
                 keyExtractor={(item) => item.barcode}
                 renderItem={renderItem}
                 refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
             />  
-            </ThemeProvider>
             <View
                 style={styles.addButtonWrapper}
             >
