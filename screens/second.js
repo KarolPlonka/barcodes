@@ -4,8 +4,9 @@ import { BarCodeScanner } from 'expo-barcode-scanner';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const barcodeTypes = new Map([
-  [32, 'EAN13'],
-])
+  ['org.gs1.EAN-13', 'EAN13'],
+  [512, 'EAN13'],
+]);
 
 export default function AddScreen() {
   const [hasPermission, setHasPermission] = useState(null);
@@ -31,45 +32,43 @@ export default function AddScreen() {
     setBarcode({ barcode: data, type: type });
     console.log('Typ: ' + type + '\t Kod kreskowy: ' + data);
   };
-
-
+  
   const appendData = async (newElement) => {
-    let myArray = [];
+    let myArray = null;
     try {
       const data = await AsyncStorage.getItem('barcodes');
-      if (data) {
-        myArray = JSON.parse(data);
-      }
+      myArray = data ? JSON.parse(data) : [];
       myArray.push(newElement);
       await AsyncStorage.setItem('barcodes', JSON.stringify(myArray));
     } catch (error) {
       console.error(error);
+    } finally {
+      setBarcode(myArray);
     }
   };
 
+function addBarcode(name, barcode) {
+  if (!name || !barcode.barcode) {
+    Alert.alert(
+      "Błąd",
+      "Wypełnij wszystkie pola",
+    )
+    return;
+  }
 
-  function addBarcode(name, barcode) {
-    if (!name || !barcode.barcode) {
-      Alert.alert(
-        "Błąd",
-        "Wypełnij wszystkie pola",
-      )
-      return;
-    }
+  if (!barcodeTypes.has(barcode.type)){
+    Alert.alert("Nieobsługiwany typ kodu kreskowego")
+    return;
+  }
 
-    if (!barcodeTypes.has(barcode.type)){
-      Alert.alert("Nieobsługiwany typ kodu kreskowego")
-      return;
-    }
+  appendData({
+    title: name,
+    barcode: barcode.barcode,
+    type: barcodeTypes.get(barcode.type),
+  })
 
-    appendData({
-      title: name,
-      barcode: barcode.barcode,
-      type: barcodeTypes.get(barcode.type),
-    })
-
-    console.log('Nazwa: ' + name + '\tData: ' + barcode.barcode + '\Type: ' + barcode.type)
-  };
+  console.log('Nazwa: ' + name + '\tData: ' + barcode.barcode + '\Type: ' + barcode.type)
+};
 
 
   // Check permissions and return the screens
