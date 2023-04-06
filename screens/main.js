@@ -9,7 +9,9 @@ import {
   View,
   ScrollView,
   Alert,
+  Animated,
 } from "react-native";
+import { useIsFocused } from '@react-navigation/native'; // import useIsFocused
 
 import DraggableFlatList, {
   ScaleDecorator,
@@ -17,7 +19,8 @@ import DraggableFlatList, {
 import colors from "../assets/colors";
 import Barcode from "@kichiyaki/react-native-barcode-generator";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { Ionicons } from '@expo/vector-icons'; 
+import { Feather } from '@expo/vector-icons';
+import SplashScreen from "./splash";
 
 const Item = ({
   item,
@@ -81,8 +84,11 @@ const getData = async () => {
 };
 
 export default function MainScreen({ navigation }) {
-    const [BARCODES, setBARCODES] = useState([]);
-    const [selectedBarcode, setSelectedBarcode] = useState(null);
+  const [BARCODES, setBARCODES] = useState([]);
+  const [selectedBarcode, setSelectedBarcode] = useState(null);
+  const [splashVisible, setSplashVisible] = useState(false);
+
+  const isFocused = useIsFocused(); // use useIsFocused
 
   const loadBarcodes = () => {
     const getDataAndSetState = async () => {
@@ -93,8 +99,10 @@ export default function MainScreen({ navigation }) {
   };
 
   useEffect(() => {
-    loadBarcodes();
-  }, []);
+    if (isFocused) {
+      loadBarcodes();
+    }
+  }, [isFocused]);
 
   const deleteBarcode = (barcode) => {
     Alert.alert(
@@ -163,29 +171,29 @@ export default function MainScreen({ navigation }) {
   };
 
   function refreshPage() {
-    loadBarcodes();
+    setSplashVisible(true);
+    setTimeout(() => {
+      loadBarcodes();
+      setSplashVisible(false);
+    }, 2000); // Adjust this time based on your splash screen animation duration
   }
 
   return (
     <SafeAreaView style={styles.container}>
+      {splashVisible && <SplashScreen />}
       <View style={styles.refreshButtonWrapper}>
         <TouchableOpacity onPress={refreshPage}>
-            <Ionicons name="refresh-circle" size={24} color="black" />
+            <Feather name="refresh-ccw" size={24} color="black" />
         </TouchableOpacity>
       </View>
-        <ScrollView>
-
-        <View style={{ flex: 1 }}>
-            <DraggableFlatList
-                data={BARCODES}
-                renderItem={renderItem}
-                keyExtractor={(item) => `draggable-item-${item.barcode}`}
-                onDragEnd={({ data }) => handleDragDrop({ data })}
-            />
-        </View>
-        </ScrollView>
-
-
+      <View style={{ flex: 1 }}>
+        <DraggableFlatList
+          data={BARCODES}
+          renderItem={renderItem}
+          keyExtractor={(item) => `draggable-item-${item.barcode}`}
+          onDragEnd={({ data }) => handleDragDrop({ data })}
+        />
+      </View>
       <View style={styles.addButtonWrapper}>
         <TouchableOpacity
           style={styles.addButton}
@@ -199,21 +207,21 @@ export default function MainScreen({ navigation }) {
 }
 
 const styles = StyleSheet.create({
-container: {
+  container: {
     flex: 1,
     backgroundColor: "#f0e6d2",
     marginTop: StatusBar.currentHeight || 0,
-},
-refreshButtonWrapper: {
+  },
+  refreshButtonWrapper: {
     alignItems: "center",
     marginVertical: 5,
-},
-refreshButton: {
+  },
+  refreshButton: {
     width: 50,
     height: 50,
     justifyContent: "center",
     alignItems: "center",
-},
+  },
   container: {
     flex: 1,
     backgroundColor: "#f0e6d2",
