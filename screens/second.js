@@ -66,17 +66,41 @@ export default function AddScreen() {
     }
   };
 
-  function addBarcode(name, barcode) {
+  // check if barcode already exists
+  const checkBarcode = async (barcode) => {
+    let myArray = null;
+    try {
+      const data = await AsyncStorage.getItem("barcodes");
+      myArray = data ? JSON.parse(data) : [];
+      console.log(myArray);
+      for (const element of myArray) {
+        if (element.barcode === barcode) {
+          Alert.alert("Błąd", "Kod kreskowy już istnieje");
+          return true;
+        }
+      }
+    } catch (error) {
+      console.error(error);
+    }
+    return false;
+  };
+
+  async function addBarcode(name, barcode) {
     if (!name || !barcode.barcode) {
       Alert.alert("Błąd", "Wypełnij wszystkie pola");
       return;
     }
-  
+
     if (!barcodeTypes.has(barcode.type)) {
       Alert.alert("Nieobsługiwany typ kodu kreskowego");
       return;
     }
-  
+
+    const barcodeExists = await checkBarcode(barcode.barcode);
+    if (barcodeExists) {
+      return;
+    }
+
     setSplashVisible(true);
 
     setTimeout(async () => {
@@ -86,14 +110,17 @@ export default function AddScreen() {
         type: barcodeTypes.get(barcode.type),
       });
       console.log(
-        "Nazwa: " + name + "\tData: " + barcode.barcode + "Type: " + barcode.type
+        "Nazwa: " +
+          name +
+          "\tData: " +
+          barcode.barcode +
+          "Type: " +
+          barcode.type
       );
       navigation.navigate("MainScreen", { newBarcode: barcode }); // navigate to the MainScreen component with the new barcode
       setSplashVisible(false);
     }, 2000);
   }
-  
-  
 
   // Check permissions and return the screens
   if (hasPermission === null) {
@@ -156,7 +183,6 @@ export default function AddScreen() {
         style={styles.pressable}
         onPress={() => addBarcode(name, barcode)}
       >
-
         <Text style={styles.text}>Dodaj</Text>
       </Pressable>
     </View>
