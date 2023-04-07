@@ -22,7 +22,7 @@ export default function AddScreen() {
   const [scanned, setScanned] = useState(false);
   const [name, setName] = useState("");
   const [barcodeValue, setBarcodeValue] = useState("");
-  const [barcodeTypeIndex, setbarcodeTypeIndex] = useState(1);
+  const [barcodeTypeIndex, setbarcodeTypeIndex] = useState(null);
   const [borderColor, setBorderColor] = useState("#CCCCCC");
   const [splashVisible, setSplashVisible] = useState(false);
   const [isBarcodeValid, setIsBarcodeValid] = useState(null);
@@ -212,6 +212,8 @@ export default function AddScreen() {
           onPress={() => {
             setScanned(false);
             setBorderColor("#CCCCCC");
+            setBarcodeValue("");
+            setbarcodeTypeIndex(null);
           }}
         >
           <Text style={styles.text}>Kliknij, aby zeskanować ponownie</Text>
