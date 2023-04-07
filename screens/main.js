@@ -7,48 +7,34 @@ import {
   TouchableOpacity,
   Dimensions,
   View,
-  ScrollView,
-  Alert,
-  Animated,
 } from "react-native";
 import { useIsFocused } from '@react-navigation/native'; // import useIsFocused
 
-import DraggableFlatList, {
-  ScaleDecorator,
-} from "react-native-draggable-flatlist";
+import DraggableFlatList, {ScaleDecorator,} from "react-native-draggable-flatlist";
+import { GestureHandlerRootView } from "react-native-gesture-handler";
 import colors from "../assets/colors";
 import Barcode from "@kichiyaki/react-native-barcode-generator";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Feather } from '@expo/vector-icons';
 import SplashScreen from "./splash";
 
+
+
 const Item = ({
   item,
   drag,
   onPress,
-  onDelete,
-  backgroundColor,
-  textColor,
-  selectedBarcode,
-  highlightAll,
 }) => {
-  const isSelected = item.barcode === selectedBarcode;
-  const isHighlighted = highlightAll || isSelected;
 
   return (
-    <ScaleDecorator>
+    <ScaleDecorator >
       <TouchableOpacity
         onPress={onPress}
         onLongPress={drag}
-        style={[
-          styles.item,
-          { backgroundColor: isHighlighted ? "#6e3b6e" : backgroundColor },
-        ]}
+        style={styles.item}
       >
         <View style={styles.titleWrapper}>
-          <Text
-            style={[styles.title, { color: isHighlighted ? "white" : "black" }]}
-          >
+          <Text style={styles.title}>
             {item.title}
           </Text>
         </View>
@@ -59,16 +45,10 @@ const Item = ({
             value={item.barcode}
             text={item.barcode}
             maxWidth={Dimensions.get("window").width - 100}
-            background={isHighlighted ? "#6e3b6e" : backgroundColor}
-            color={isHighlighted ? "white" : textColor}
+            background={"#6e3b6e"}
+            color={"white"}
           />
         </View>
-
-        {isSelected && (
-          <TouchableOpacity onPress={onDelete} style={styles.deleteButton}>
-            <Text style={styles.deleteButtonText}>X</Text>
-          </TouchableOpacity>
-        )}
       </TouchableOpacity>
     </ScaleDecorator>
   );
@@ -85,7 +65,6 @@ const getData = async () => {
 
 export default function MainScreen({ navigation }) {
   const [BARCODES, setBARCODES] = useState([]);
-  const [selectedBarcode, setSelectedBarcode] = useState(null);
   const [splashVisible, setSplashVisible] = useState(false);
 
   const isFocused = useIsFocused(); // use useIsFocused
@@ -104,56 +83,13 @@ export default function MainScreen({ navigation }) {
     }
   }, [isFocused]);
 
-  const deleteBarcode = (barcode) => {
-    Alert.alert(
-      "Usuń kartę",
-      "Czy jesteś pewny/a, że chcesz usunąć tę kartę?",
-      [
-        {
-          text: "Wyjdź",
-          onPress: () => console.log("Wyjście..."),
-          style: "cancel",
-        },
-        {
-          text: "Usuń",
-          onPress: async () => {
-            try {
-              const barcodes = await getData();
-              const updatedBarcodes = barcodes.filter(
-                (item) => item.barcode !== barcode
-              );
-              await AsyncStorage.setItem(
-                "barcodes",
-                JSON.stringify(updatedBarcodes)
-              );
-              setBARCODES(updatedBarcodes);
-            } catch (e) {
-              console.log(e);
-            }
-          },
-          style: "destructive",
-        },
-      ]
-    );
-  };
-
+   // navigate to the MainScreen component with the new barcode
   const renderItem = ({ item, drag }) => {
-    const backgroundColor =
-      item.barcode === selectedBarcode ? "#6e3b6e" : "white";
-    const color = item.barcode === selectedBarcode ? "white" : "#6e3b6e";
     return (
       <Item
         item={item}
         drag={drag}
-        onPress={() =>
-          setSelectedBarcode(
-            selectedBarcode === item.barcode ? null : item.barcode
-          )
-        }
-        onDelete={() => deleteBarcode(item.barcode)}
-        backgroundColor={backgroundColor}
-        textColor={color}
-        selectedBarcode={selectedBarcode}
+        onPress={() => {navigation.navigate("SelectedScreen", { selectedBarcode: item });}}
       />
     );
   };
@@ -178,35 +114,49 @@ export default function MainScreen({ navigation }) {
     }, 2000); // Adjust this time based on your splash screen animation duration
   }
 
+
   return (
-    <SafeAreaView style={styles.container}>
-      {splashVisible && <SplashScreen />}
-      <View style={styles.refreshButtonWrapper}>
-        <TouchableOpacity onPress={refreshPage}>
+      <SafeAreaView style={styles.container} >
+        {splashVisible && <SplashScreen />}
+
+
+        <View style={styles.refreshButtonWrapper}>
+          <TouchableOpacity onPress={refreshPage}>
             <Feather name="refresh-ccw" size={24} color="black" />
-        </TouchableOpacity>
-      </View>
-      <View style={{ flex: 1 }}>
-        <DraggableFlatList
-          data={BARCODES}
-          renderItem={renderItem}
-          keyExtractor={(item) => `draggable-item-${item.barcode}`}
-          onDragEnd={({ data }) => handleDragDrop({ data })}
-        />
-      </View>
-      <View style={styles.addButtonWrapper}>
-        <TouchableOpacity
-          style={styles.addButton}
-          onPress={() => navigation.navigate("AddScreen")}
-        >
-          <Text style={styles.addButtonText}>+</Text>
-        </TouchableOpacity>
-      </View>
-    </SafeAreaView>
+          </TouchableOpacity>
+        </View>
+
+        <View style={{ flex: 1 }} >
+          <GestureHandlerRootView style={{ flex: 1 }} >
+            <DraggableFlatList
+              data={BARCODES}
+              renderItem={renderItem}
+              keyExtractor={(item) => `draggable-item-${item.barcode}`}
+              onDragEnd={({ data }) => handleDragDrop({ data })}
+            />
+          </GestureHandlerRootView>
+        </View>
+
+        <View style={styles.addButtonWrapper}>
+          <TouchableOpacity
+            style={styles.addButton}
+            onPress={() => navigation.navigate("AddScreen")}
+          >
+            <Text style={styles.addButtonText}>+</Text>
+          </TouchableOpacity>
+        </View>
+
+      </SafeAreaView>
   );
+  
 }
 
 const styles = StyleSheet.create({
+  singleItem: {
+    flex: 1,
+    justifyContent: 'center',
+    height: 500,
+  },
   container: {
     flex: 1,
     backgroundColor: "#f0e6d2",

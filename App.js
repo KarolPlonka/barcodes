@@ -1,9 +1,10 @@
 import MainScreen from "./screens/main";
 import AddScreen from "./screens/second";
+import SelectedScreen from "./screens/selected";
+
 import { NavigationContainer } from "@react-navigation/native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { GestureHandlerRootView } from "react-native-gesture-handler";
 
 const Stack = createNativeStackNavigator();
 
@@ -57,26 +58,31 @@ export default function App() {
   storeData();
 
   return (
-    <GestureHandlerRootView style={{ flex: 1 }}>
-        <NavigationContainer>
-          <Stack.Navigator>
-            <Stack.Screen
-              name="MainScreen"
-              component={MainScreen}
-              options={{
-                headerShown: false,
-              }}
-            />
-            <Stack.Screen
-              name="AddScreen"
-              component={AddScreen}
-              options={{
-                headerShown: false,
-              }}
-            />
-          </Stack.Navigator>
-        </NavigationContainer>
-    </GestureHandlerRootView >
+    <NavigationContainer>
+      <Stack.Navigator>
+        <Stack.Screen
+          name="MainScreen"
+          component={MainScreen}
+          options={{
+            headerShown: false,
+          }}
+        />
+        <Stack.Screen
+          name="AddScreen"
+          component={AddScreen}
+          options={{
+            headerShown: false,
+          }}
+        />
+        <Stack.Screen
+          name="SelectedScreen"
+          component={SelectedScreen}
+          options={{
+            headerShown: false,
+          }}
+        />
+      </Stack.Navigator>
+    </NavigationContainer>
   );
 }
 

@@ -13,19 +13,19 @@ import { BarCodeScanner } from "expo-barcode-scanner";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useNavigation } from "@react-navigation/native";
 import SplashScreen from "./splash";
+import ScrollPicker from 'react-native-wheel-scrollview-picker';
+import { validateBarcode, barcodeTypes, barcodeTypesMap } from './barcodesHandler';
 
-const barcodeTypes = new Map([
-  ["org.gs1.EAN-13", "EAN13"],
-  [512, "EAN13"],
-]);
 
 export default function AddScreen() {
   const [hasPermission, setHasPermission] = useState(null);
   const [scanned, setScanned] = useState(false);
   const [name, setName] = useState("");
-  const [barcode, setBarcode] = useState({ barcode: "", type: "" });
+  const [barcodeValue, setBarcodeValue] = useState("");
+  const [barcodeTypeIndex, setbarcodeTypeIndex] = useState(1);
   const [borderColor, setBorderColor] = useState("#CCCCCC");
   const [splashVisible, setSplashVisible] = useState(false);
+  const [isBarcodeValid, setIsBarcodeValid] = useState(null);
   const navigation = useNavigation();
 
   const askForCameraPermission = () => {
@@ -35,6 +35,19 @@ export default function AddScreen() {
     })();
   };
 
+  
+  useEffect(() => {
+    if(isBarcodeValid==null){
+      setBorderColor("#CCCCCC"); 
+    }
+    else if(isBarcodeValid){
+      setBorderColor("#00FF00"); 
+    }
+    else{
+      setBorderColor("#FF0000");
+    }
+  }, [isBarcodeValid]);
+
   // Request Camera Permission
   useEffect(() => {
     askForCameraPermission();
@@ -43,12 +56,13 @@ export default function AddScreen() {
   // What happens when we scan the bar code
   const handleBarCodeScanned = ({ type, data }) => {
     setScanned(true);
-    setBarcode({ barcode: data, type: type });
+    setBarcodeValue(data);
     console.log("Typ: " + type + "\t Kod kreskowy: " + data);
-    if (!barcodeTypes.has(type)) {
+    if (!barcodeTypesMap.has(type)) {
       setBorderColor("#FF0000"); // set red border for invalid barcode type
     } else {
       setBorderColor("#00FF00"); // set green border for valid barcode type
+      setbarcodeTypeIndex(barcodeTypesMap.get(type))
     }
   };
 
@@ -61,8 +75,6 @@ export default function AddScreen() {
       await AsyncStorage.setItem("barcodes", JSON.stringify(myArray));
     } catch (error) {
       console.error(error);
-    } finally {
-      setBarcode(myArray);
     }
   };
 
@@ -85,18 +97,18 @@ export default function AddScreen() {
     return false;
   };
 
-  async function addBarcode(name, barcode) {
-    if (!name || !barcode.barcode) {
+  async function addBarcode(name, barcodeValue, barcodeTypeIndex) {
+    if (!name || !barcodeValue) {
       Alert.alert("Błąd", "Wypełnij wszystkie pola");
       return;
     }
 
-    if (!barcodeTypes.has(barcode.type)) {
-      Alert.alert("Nieobsługiwany typ kodu kreskowego");
-      return;
-    }
+    // if (!barcodeTypesMap.has(barcodeType)) {
+    //   Alert.alert("Nieobsługiwany typ kodu kreskowego");
+    //   return;
+    // }
 
-    const barcodeExists = await checkBarcode(barcode.barcode);
+    const barcodeExists = await checkBarcode(barcodeValue);
     if (barcodeExists) {
       return;
     }
@@ -106,18 +118,18 @@ export default function AddScreen() {
     setTimeout(async () => {
       await appendData({
         title: name,
-        barcode: barcode.barcode,
-        type: barcodeTypes.get(barcode.type),
+        barcode: barcodeValue,
+        type: barcodeTypes[barcodeTypeIndex],
       });
       console.log(
         "Nazwa: " +
           name +
           "\tData: " +
-          barcode.barcode +
+          barcodeValue +
           "Type: " +
-          barcode.type
+          barcodeTypes[barcodeTypeIndex]
       );
-      navigation.navigate("MainScreen", { newBarcode: barcode }); // navigate to the MainScreen component with the new barcode
+      navigation.navigate("MainScreen", { newBarcode: barcodeValue }); // navigate to the MainScreen component with the new barcode
       setSplashVisible(false);
     }, 2000);
   }
@@ -142,6 +154,49 @@ export default function AddScreen() {
     );
   }
 
+  const handleTypeInput = (data, selectedIndex) => {
+    setbarcodeTypeIndex(selectedIndex)
+
+    if(barcodeValue === ""){
+      setIsBarcodeValid(null)
+      return;
+    }
+
+    if(validateBarcode(barcodeValue, selectedIndex)){
+      setIsBarcodeValid(true)
+      return;
+    }
+
+    setIsBarcodeValid(false)
+  }
+
+
+  const hadnleBarcodeInput = (newValue) => {
+    setBarcodeValue(newValue)
+
+    if(newValue === ""){
+      setIsBarcodeValid(null)
+      return;
+    }
+
+    if(validateBarcode(newValue, barcodeTypeIndex)){
+      setIsBarcodeValid(true)
+      return;
+    }
+
+    setIsBarcodeValid(false)
+  }
+
+  const renderType = (data, index) => {
+    const textStyle = index === barcodeTypeIndex ? { fontSize: 30 } : {};
+  
+    return (
+      <View>
+        <Text style={textStyle}>{data}</Text>
+      </View>
+    );
+  };
+
   // Return the View
   return (
     <View style={styles.container}>
@@ -163,10 +218,29 @@ export default function AddScreen() {
         </TouchableOpacity>
       )}
 
+      <View style={styles.typePicker}>
+        <ScrollPicker
+          dataSource={barcodeTypes}
+          selectedIndex={1}
+          renderItem={renderType}
+          onValueChange={handleTypeInput}
+          // onValueChange={(data, selectedIndex) => {
+          //   console.log(selectedIndex)
+          //   setbarcodeTypeIndex(selectedIndex)
+          // }}
+          wrapperHeight={180}
+          wrapperWidth={150}
+          wrapperColor="#FFFFFF"
+          itemHeight={60}
+          highlightColor="#d8d8d8"
+          highlightBorderWidth={2}
+        />
+      </View>
+
       <TextInput
-        style={styles.input}
-        value={barcode.barcode}
-        onChangeText={setBarcode}
+        style={[styles.input, {borderColor}]}
+        value={barcodeValue}
+        onChangeText={hadnleBarcodeInput}
         placeholder="barcode"
         placeholderTextColor="#9E9E9E"
       />
@@ -181,7 +255,7 @@ export default function AddScreen() {
       {splashVisible && <SplashScreen />}
       <Pressable
         style={styles.pressable}
-        onPress={() => addBarcode(name, barcode)}
+        onPress={() => addBarcode(name, barcodeValue, barcodeTypeIndex)}
       >
         <Text style={styles.text}>Dodaj</Text>
       </Pressable>
@@ -190,6 +264,10 @@ export default function AddScreen() {
 }
 
 const styles = StyleSheet.create({
+  typePicker: {
+    height: 150,
+    width: "80%",
+  },
   container: {
     flex: 1,
     backgroundColor: "#f0e6d2",
