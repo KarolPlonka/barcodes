@@ -1,9 +1,10 @@
-import React, { useState } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import {
     SafeAreaView,
     StatusBar,
     StyleSheet,
     Text,
+    TextInput,
     TouchableOpacity,
     Dimensions,
     View,
@@ -18,8 +19,18 @@ import { Feather } from '@expo/vector-icons';
 
 export default function SelectedScreen({ route }) {
     const navigation = useNavigation();
-    const selectedBarcode = route.params.selectedBarcode;
+    const [selectedBarcode, setSelectedBarcode] = useState(route.params.selectedBarcode);
     const [hasPermission, setHasPermission] = useState(false);
+    const [newBarcodeTitle, setNewBarcodeTitle] = useState(selectedBarcode.title);
+    const [editMode, setEditMode] = useState(false);
+    const titleRef = useRef();
+
+
+    useEffect(() => {
+        //set cursor focus to title after loading edit mode
+        if (editMode) titleRef.current.focus();
+      }, [editMode]);
+
 
     const setMaxBrightness = async () => {
         if (!hasPermission) {
@@ -38,6 +49,30 @@ export default function SelectedScreen({ route }) {
         }
     };
 
+    const updateBarcode = async (barcode, newTitle) => {
+        if(newTitle === ""){
+            Alert.alert("Title cannot be empty");
+            return;
+        }
+
+        try {
+            const barcodes = await getData();
+            const barcodeIndex = barcodes.findIndex(
+                (item) => item.barcode === barcode.barcode
+            );
+            barcodes[barcodeIndex].title = newTitle;
+            await AsyncStorage.setItem(
+                "barcodes",
+                JSON.stringify(barcodes)
+            );
+            setSelectedBarcode(barcodes[barcodeIndex])
+            setEditMode(false);
+        } catch (e) {
+            console.log(e);
+        }
+
+    }
+
     const deleteBarcode = (barcode) => {
         Alert.alert(
             "Usuń kartę",
@@ -54,7 +89,7 @@ export default function SelectedScreen({ route }) {
                         try {
                             const barcodes = await getData();
                             const updatedBarcodes = barcodes.filter(
-                                (item) => item.barcode !== barcode
+                                (item) => item.barcode !== barcode.barcode
                             );
                             await AsyncStorage.setItem(
                                 "barcodes",
@@ -72,14 +107,24 @@ export default function SelectedScreen({ route }) {
         );
     };
 
+
     return (
         <SafeAreaView style={styles.container} >
             <View style={styles.singleItem}>
 
                 <View style={styles.titleWrapper}>
-                    <Text style={styles.title}>
-                        {selectedBarcode.title}
-                    </Text>
+                    {editMode ? (
+                        <TextInput
+                            ref={titleRef}
+                            style={styles.title}
+                            value={newBarcodeTitle}
+                            onChangeText={text => setNewBarcodeTitle(text)}
+                        />
+                    ) : (
+                        <Text style={styles.title}>
+                            {selectedBarcode.title}
+                        </Text>
+                    )}
                 </View>
 
                 <View style={styles.barcodeWrapper}>
@@ -94,13 +139,38 @@ export default function SelectedScreen({ route }) {
                         color={"white"}
                     />
                 </View>
-
+                
                 <TouchableOpacity
-                    onPress={() => { deleteBarcode(selectedBarcode.barcode) }}
+                    onPress={() => { deleteBarcode(selectedBarcode) }}
                     style={styles.deleteButton}
                 >
                     <Feather name="trash" size={30} color="black" />
                 </TouchableOpacity>
+
+
+
+                {editMode ? (<>
+                    <TouchableOpacity
+                        onPress={() => { updateBarcode(selectedBarcode, newBarcodeTitle) }}
+                        style={styles.confirmButton}
+                    >
+                        <Feather name="check" size={30} color="black" />
+                    </TouchableOpacity>
+                    <TouchableOpacity
+                        onPress={() => { setEditMode(false) }}
+                        style={styles.declineButton}
+                    >
+                        <Feather name="x" size={30} color="black" />
+                    </TouchableOpacity>
+                </>) : (
+                    <TouchableOpacity
+                        onPress={() => { setEditMode(true) }}
+                        style={styles.editButton}
+                    >
+                        <Feather name="edit" size={30} color="black" />
+                    </TouchableOpacity>
+                )}
+
 
                 <TouchableOpacity
                     onPress={() => { setMaxBrightness() }}
@@ -136,6 +206,21 @@ const styles = StyleSheet.create({
         position: "absolute",
         bottom: 20,
         right: 20,
+    },
+    editButton: {
+        position: "absolute",
+        bottom: 20,
+        right: 80,
+    },
+    confirmButton: {
+        position: "absolute",
+        bottom: 20,
+        right: 140,
+    },
+    declineButton: {
+        position: "absolute",
+        bottom: 20,
+        right: 80,
     },
     brightnessButton: {
         position: "absolute",
