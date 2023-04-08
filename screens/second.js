@@ -34,9 +34,9 @@ export default function AddScreen() {
       setHasPermission(status === "granted");
     })();
   };
-
   
   useEffect(() => {
+    console.log("use effect g")
     if(isBarcodeValid==null){
       setBorderColor("#CCCCCC"); 
     }
@@ -46,7 +46,7 @@ export default function AddScreen() {
     else{
       setBorderColor("#FF0000");
     }
-  }, [isBarcodeValid]);
+    }, [isBarcodeValid]);
 
   // Request Camera Permission
   useEffect(() => {
@@ -103,11 +103,6 @@ export default function AddScreen() {
       return;
     }
 
-    // if (!barcodeTypesMap.has(barcodeType)) {
-    //   Alert.alert("Nieobsługiwany typ kodu kreskowego");
-    //   return;
-    // }
-
     const barcodeExists = await checkBarcode(barcodeValue);
     if (barcodeExists) {
       return;
@@ -126,12 +121,12 @@ export default function AddScreen() {
           name +
           "\tData: " +
           barcodeValue +
-          "Type: " +
+          "\tType: " +
           barcodeTypes[barcodeTypeIndex]
       );
       navigation.navigate("MainScreen", { newBarcode: barcodeValue }); // navigate to the MainScreen component with the new barcode
       setSplashVisible(false);
-    }, 2000);
+    }, 1500);
   }
 
   // Check permissions and return the screens
@@ -154,20 +149,30 @@ export default function AddScreen() {
     );
   }
 
+  const findType = (barcodeValue) => {
+    for(let i = 0; i < barcodeTypes.length; i++){
+      if(validateBarcode(barcodeValue, i)){
+        return i;
+      }
+    }
+    return null;
+  }
+
   const handleTypeInput = (data, selectedIndex) => {
-    setbarcodeTypeIndex(selectedIndex)
+    setbarcodeTypeIndex(selectedIndex);
 
     if(barcodeValue === ""){
-      setIsBarcodeValid(null)
+      setIsBarcodeValid(null);
       return;
-    }
-
+    }    
+    
+    
     if(validateBarcode(barcodeValue, selectedIndex)){
-      setIsBarcodeValid(true)
+      setIsBarcodeValid(true);
       return;
     }
 
-    setIsBarcodeValid(false)
+    setIsBarcodeValid(false);
   }
 
 
@@ -175,16 +180,18 @@ export default function AddScreen() {
     setBarcodeValue(newValue)
 
     if(newValue === ""){
-      setIsBarcodeValid(null)
+      setIsBarcodeValid(null);
       return;
     }
 
-    if(validateBarcode(newValue, barcodeTypeIndex)){
-      setIsBarcodeValid(true)
+    let typeIndex = findType(newValue);
+    if(typeIndex!==null){
+      setbarcodeTypeIndex(typeIndex);
+      setIsBarcodeValid(true);
       return;
     }
 
-    setIsBarcodeValid(false)
+    setIsBarcodeValid(false);
   }
 
   const renderType = (data, index) => {
@@ -197,7 +204,6 @@ export default function AddScreen() {
     );
   };
 
-  // Return the View
   return (
     <View style={styles.container}>
       <View style={[styles.barcodebox, { borderColor }]}>
@@ -226,10 +232,6 @@ export default function AddScreen() {
           selectedIndex={1}
           renderItem={renderType}
           onValueChange={handleTypeInput}
-          // onValueChange={(data, selectedIndex) => {
-          //   console.log(selectedIndex)
-          //   setbarcodeTypeIndex(selectedIndex)
-          // }}
           wrapperHeight={180}
           wrapperWidth={150}
           wrapperColor="#FFFFFF"
