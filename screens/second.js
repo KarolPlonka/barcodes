@@ -8,6 +8,8 @@ import {
   TextInput,
   TouchableOpacity,
   Alert,
+  TouchableWithoutFeedback,
+  Keyboard,
 } from "react-native";
 import { BarCodeScanner } from "expo-barcode-scanner";
 import AsyncStorage from "@react-native-async-storage/async-storage";
@@ -34,19 +36,19 @@ export default function AddScreen() {
       setHasPermission(status === "granted");
     })();
   };
-  
+
   useEffect(() => {
     console.log("use effect g")
-    if(isBarcodeValid==null){
-      setBorderColor("#CCCCCC"); 
+    if (isBarcodeValid == null) {
+      setBorderColor("#CCCCCC");
     }
-    else if(isBarcodeValid){
-      setBorderColor("#00FF00"); 
+    else if (isBarcodeValid) {
+      setBorderColor("#00FF00");
     }
-    else{
+    else {
       setBorderColor("#FF0000");
     }
-    }, [isBarcodeValid]);
+  }, [isBarcodeValid]);
 
   // Request Camera Permission
   useEffect(() => {
@@ -118,11 +120,11 @@ export default function AddScreen() {
       });
       console.log(
         "Nazwa: " +
-          name +
-          "\tData: " +
-          barcodeValue +
-          "\tType: " +
-          barcodeTypes[barcodeTypeIndex]
+        name +
+        "\tData: " +
+        barcodeValue +
+        "\tType: " +
+        barcodeTypes[barcodeTypeIndex]
       );
       navigation.navigate("MainScreen", { newBarcode: barcodeValue }); // navigate to the MainScreen component with the new barcode
       setSplashVisible(false);
@@ -150,8 +152,8 @@ export default function AddScreen() {
   }
 
   const findType = (barcodeValue) => {
-    for(let i = 0; i < barcodeTypes.length; i++){
-      if(validateBarcode(barcodeValue, i)){
+    for (let i = 0; i < barcodeTypes.length; i++) {
+      if (validateBarcode(barcodeValue, i)) {
         return i;
       }
     }
@@ -161,13 +163,13 @@ export default function AddScreen() {
   const handleTypeInput = (data, selectedIndex) => {
     setbarcodeTypeIndex(selectedIndex);
 
-    if(barcodeValue === ""){
+    if (barcodeValue === "") {
       setIsBarcodeValid(null);
       return;
-    }    
-    
-    
-    if(validateBarcode(barcodeValue, selectedIndex)){
+    }
+
+
+    if (validateBarcode(barcodeValue, selectedIndex)) {
       setIsBarcodeValid(true);
       return;
     }
@@ -179,13 +181,13 @@ export default function AddScreen() {
   const hadnleBarcodeInput = (newValue) => {
     setBarcodeValue(newValue)
 
-    if(newValue === ""){
+    if (newValue === "") {
       setIsBarcodeValid(null);
       return;
     }
 
     let typeIndex = findType(newValue);
-    if(typeIndex!==null){
+    if (typeIndex !== null) {
       setbarcodeTypeIndex(typeIndex);
       setIsBarcodeValid(true);
       return;
@@ -196,7 +198,7 @@ export default function AddScreen() {
 
   const renderType = (data, index) => {
     const textStyle = index === barcodeTypeIndex ? { fontSize: 30 } : {};
-  
+
     return (
       <View>
         <Text style={textStyle}>{data}</Text>
@@ -205,65 +207,70 @@ export default function AddScreen() {
   };
 
   return (
-    <View style={styles.container}>
-      <View style={[styles.barcodebox, { borderColor }]}>
-        <BarCodeScanner
-          onBarCodeScanned={scanned ? undefined : handleBarCodeScanned}
-          style={{ height: 400, width: 400 }}
+    // <TouchableWithoutFeedback onPress={() => {
+    //   Keyboard.dismiss();
+    //   console.log("dismissed keyboard")
+    // }}>
+      <View style={styles.container}>
+        <View style={[styles.barcodebox, { borderColor }]}>
+          <BarCodeScanner
+            onBarCodeScanned={scanned ? undefined : handleBarCodeScanned}
+            style={{ height: 400, width: 400 }}
+          />
+        </View>
+        {scanned && (
+          <TouchableOpacity
+            style={styles.button}
+            onPress={() => {
+              setScanned(false);
+              setBorderColor("#CCCCCC");
+              setBarcodeValue("");
+              setbarcodeTypeIndex(null);
+            }}
+          >
+            <Text style={styles.text}>Kliknij, aby zeskanować ponownie</Text>
+          </TouchableOpacity>
+        )}
+
+        <View style={styles.typePicker}>
+          <ScrollPicker
+            dataSource={barcodeTypes}
+            selectedIndex={1}
+            renderItem={renderType}
+            onValueChange={handleTypeInput}
+            wrapperHeight={180}
+            wrapperWidth={150}
+            wrapperColor="#FFFFFF"
+            itemHeight={60}
+            highlightColor="#d8d8d8"
+            highlightBorderWidth={2}
+          />
+        </View>
+
+        <TextInput
+          style={[styles.input, { borderColor }]}
+          value={barcodeValue}
+          onChangeText={hadnleBarcodeInput}
+          placeholder="barcode"
+          placeholderTextColor="#9E9E9E"
         />
-      </View>
-      {scanned && (
-        <TouchableOpacity
-          style={styles.button}
-          onPress={() => {
-            setScanned(false);
-            setBorderColor("#CCCCCC");
-            setBarcodeValue("");
-            setbarcodeTypeIndex(null);
-          }}
+  
+        <TextInput
+          style={styles.input}
+          value={name}
+          onChangeText={setName}
+          placeholder="name"
+          placeholderTextColor="#9E9E9E"
+        />
+        {splashVisible && <SplashScreen />}
+        <Pressable
+          style={styles.pressable}
+          onPress={() => addBarcode(name, barcodeValue, barcodeTypeIndex)}
         >
-          <Text style={styles.text}>Kliknij, aby zeskanować ponownie</Text>
-        </TouchableOpacity>
-      )}
-
-      <View style={styles.typePicker}>
-        <ScrollPicker
-          dataSource={barcodeTypes}
-          selectedIndex={1}
-          renderItem={renderType}
-          onValueChange={handleTypeInput}
-          wrapperHeight={180}
-          wrapperWidth={150}
-          wrapperColor="#FFFFFF"
-          itemHeight={60}
-          highlightColor="#d8d8d8"
-          highlightBorderWidth={2}
-        />
+          <Text style={styles.text}>Dodaj</Text>
+        </Pressable>
       </View>
-
-      <TextInput
-        style={[styles.input, {borderColor}]}
-        value={barcodeValue}
-        onChangeText={hadnleBarcodeInput}
-        placeholder="barcode"
-        placeholderTextColor="#9E9E9E"
-      />
-
-      <TextInput
-        style={styles.input}
-        value={name}
-        onChangeText={setName}
-        placeholder="name"
-        placeholderTextColor="#9E9E9E"
-      />
-      {splashVisible && <SplashScreen />}
-      <Pressable
-        style={styles.pressable}
-        onPress={() => addBarcode(name, barcodeValue, barcodeTypeIndex)}
-      >
-        <Text style={styles.text}>Dodaj</Text>
-      </Pressable>
-    </View>
+    // </TouchableWithoutFeedback>
   );
 }
 
