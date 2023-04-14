@@ -20,6 +20,7 @@ import { Feather } from '@expo/vector-icons';
 // Local modules
 import SplashScreen from "./splash";
 import styles from "../assets/styles";
+import { storeData } from "../utils/utils";
 
 const Item = React.memo(({ item, drag, onPress }) => {
   return (
@@ -86,6 +87,7 @@ const MainScreen = ({ navigation }) => {
     setSplashVisible(true);
     setTimeout(() => {
       navigation.navigate("MainScreen");
+      storeData();
       setSplashVisible(false);
     }, 2000); // Adjust this time based on your splash screen animation duration
   };

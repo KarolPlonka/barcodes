@@ -4,61 +4,14 @@ import SelectedScreen from "./screens/selected";
 
 import { NavigationContainer } from "@react-navigation/native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import { storeData } from "./utils/utils";
 
 const Stack = createNativeStackNavigator();
-
-const testBARCODES = [
-  { 
-    title: 'BIEDRONKA',
-    barcode: '978020137962',
-    type: 'EAN13'
-  },
-  {
-    title: 'ORLEN',
-    barcode: '123456789123',
-    type: 'EAN13'
-  },
-  {
-    title: 'LIDL',
-    barcode: '223456789123',
-    type: 'EAN13'
-  },
-  {
-    title: 'TESCO',
-    barcode: '443456789123',
-    type: 'EAN13'
-  },
-  {
-    title: 'TESTCO',
-    barcode: '553456789123',
-    type: 'EAN13'
-  },
-  {
-    title: 'SHEESH',
-    barcode: '663456789123',
-    type: 'EAN13'
-  },
-];
-
-const storeData = async () => {
-  try {
-    const data = await AsyncStorage.getItem('barcodes')
-    if(!data){
-      await AsyncStorage.setItem('barcodes', JSON.stringify(testBARCODES))
-      return;
-    }
-  } catch (e) {
-    console.log(e)
-  }
-}
-
 
 export default function App() {
   storeData();
 
   return (
-
     <NavigationContainer>
       <Stack.Navigator>
         <Stack.Screen
