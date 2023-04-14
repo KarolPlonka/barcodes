@@ -21,6 +21,7 @@
     "expo-status-bar": "~1.4.4",
     "lottie-ios": "3.4.1",
     "lottie-react-native": "5.1.4",
+    "native-base": "^3.4.28",
     "react": "18.2.0",
     "react-native": "0.71.6",
     "react-native-design-system": "^2.0.3",
@@ -40,7 +41,8 @@
     "react-native-swipeable-item": "^2.0.9",
     "react-native-value-picker": "^0.1.4",
     "react-native-wheel-scrollview-picker": "^2.0.1",
-    "react-test-renderer": "^18.2.0"
+    "react-test-renderer": "^18.2.0",
+    "styled-components": "^5.3.9"
   },
   "devDependencies": {
     "@babel/core": "^7.20.0"

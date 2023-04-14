@@ -1,102 +1,69 @@
-import React, { useState, useEffect } from "react";
+// Import React and React Native components
+import React, { useEffect, useReducer } from "react";
 import {
   Text,
   View,
-  StyleSheet,
   Button,
   Pressable,
   TextInput,
   TouchableOpacity,
   Alert,
-  TouchableWithoutFeedback,
-  Keyboard,
 } from "react-native";
-import { BarCodeScanner } from "expo-barcode-scanner";
-import AsyncStorage from "@react-native-async-storage/async-storage";
-import { useNavigation } from "@react-navigation/native";
-import SplashScreen from "./splash";
-import ScrollPicker from 'react-native-wheel-scrollview-picker';
-import { validateBarcode, barcodeTypes, barcodeTypesMap } from './barcodesHandler';
 
+// Import Expo BarCodeScanner and react-navigation hook
+import { BarCodeScanner } from "expo-barcode-scanner";
+import { useNavigation } from "@react-navigation/native";
+
+// Import custom components and functions
+import SplashScreen from "./splash";
+import ScrollPicker from "react-native-wheel-scrollview-picker";
+import {
+  validateBarcode,
+  barcodeTypes,
+  barcodeTypesMap,
+} from "./barcodesHandler";
+import { appendData, checkBarcode } from "../utils/utils";
+import { reducer, initialState } from "../utils/reducer";
+import styles from "../assets/second-styles";
 
 export default function AddScreen() {
-  const [hasPermission, setHasPermission] = useState(null);
-  const [scanned, setScanned] = useState(false);
-  const [name, setName] = useState("");
-  const [barcodeValue, setBarcodeValue] = useState("");
-  const [barcodeTypeIndex, setbarcodeTypeIndex] = useState(null);
-  const [borderColor, setBorderColor] = useState("#CCCCCC");
-  const [splashVisible, setSplashVisible] = useState(false);
-  const [isBarcodeValid, setIsBarcodeValid] = useState(null);
+  const [state, dispatch] = useReducer(reducer, initialState);
   const navigation = useNavigation();
 
   const askForCameraPermission = () => {
     (async () => {
       const { status } = await BarCodeScanner.requestPermissionsAsync();
-      setHasPermission(status === "granted");
+      dispatch({ type: "SET_HAS_PERMISSION", payload: status === "granted" });
     })();
   };
 
   useEffect(() => {
-    console.log("use effect g")
-    if (isBarcodeValid == null) {
-      setBorderColor("#CCCCCC");
+    if (state.isBarcodeValid == null) {
+      dispatch({ type: "SET_BORDER_COLOR", payload: "#CCCCCC" });
+    } else if (state.isBarcodeValid) {
+      dispatch({ type: "SET_BORDER_COLOR", payload: "#00FF00" });
+    } else {
+      dispatch({ type: "SET_BORDER_COLOR", payload: "#FF0000" });
     }
-    else if (isBarcodeValid) {
-      setBorderColor("#00FF00");
-    }
-    else {
-      setBorderColor("#FF0000");
-    }
-  }, [isBarcodeValid]);
+  }, [state.isBarcodeValid]);
 
-  // Request Camera Permission
   useEffect(() => {
     askForCameraPermission();
   }, []);
 
-  // What happens when we scan the bar code
   const handleBarCodeScanned = ({ type, data }) => {
-    setScanned(true);
-    setBarcodeValue(data);
-    console.log("Typ: " + type + "\t Kod kreskowy: " + data);
+    dispatch({ type: "SET_SCANNED", payload: true });
+    dispatch({ type: "SET_BARCODE_VALUE", payload: data });
+    console.log("Type: " + type + "\t Barcode: " + data);
     if (!barcodeTypesMap.has(type)) {
-      setBorderColor("#FF0000"); // set red border for invalid barcode type
+      dispatch({ type: "SET_BORDER_COLOR", payload: "#FF0000" });
     } else {
-      setBorderColor("#00FF00"); // set green border for valid barcode type
-      setbarcodeTypeIndex(barcodeTypesMap.get(type))
+      dispatch({ type: "SET_BORDER_COLOR", payload: "#00FF00" });
+      dispatch({
+        type: "SET_BARCODE_TYPE_INDEX",
+        payload: barcodeTypesMap.get(type),
+      });
     }
-  };
-
-  const appendData = async (newElement) => {
-    let myArray = null;
-    try {
-      const data = await AsyncStorage.getItem("barcodes");
-      myArray = data ? JSON.parse(data) : [];
-      myArray.push(newElement);
-      await AsyncStorage.setItem("barcodes", JSON.stringify(myArray));
-    } catch (error) {
-      console.error(error);
-    }
-  };
-
-  // check if barcode already exists
-  const checkBarcode = async (barcode) => {
-    let myArray = null;
-    try {
-      const data = await AsyncStorage.getItem("barcodes");
-      myArray = data ? JSON.parse(data) : [];
-      console.log(myArray);
-      for (const element of myArray) {
-        if (element.barcode === barcode) {
-          Alert.alert("Błąd", "Kod kreskowy już istnieje");
-          return true;
-        }
-      }
-    } catch (error) {
-      console.error(error);
-    }
-    return false;
   };
 
   async function addBarcode(name, barcodeValue, barcodeTypeIndex) {
@@ -104,13 +71,11 @@ export default function AddScreen() {
       Alert.alert("Błąd", "Wypełnij wszystkie pola");
       return;
     }
-
     const barcodeExists = await checkBarcode(barcodeValue);
     if (barcodeExists) {
       return;
     }
-
-    setSplashVisible(true);
+    dispatch({ type: "SET_SPLASH_VISIBLE", payload: true });
 
     setTimeout(async () => {
       await appendData({
@@ -118,28 +83,20 @@ export default function AddScreen() {
         barcode: barcodeValue,
         type: barcodeTypes[barcodeTypeIndex],
       });
-      console.log(
-        "Nazwa: " +
-        name +
-        "\tData: " +
-        barcodeValue +
-        "\tType: " +
-        barcodeTypes[barcodeTypeIndex]
-      );
-      navigation.navigate("MainScreen", { newBarcode: barcodeValue }); // navigate to the MainScreen component with the new barcode
-      setSplashVisible(false);
+      navigation.navigate("MainScreen", { newBarcode: barcodeValue });
+      dispatch({ type: "SET_SPLASH_VISIBLE", payload: false });
     }, 1500);
   }
 
-  // Check permissions and return the screens
-  if (hasPermission === null) {
+  // Check permissions and return the actual screen
+  if (state.hasPermission === null) {
     return (
       <View style={styles.container}>
         <Text style={styles.text}>Requesting for camera permission</Text>
       </View>
     );
   }
-  if (hasPermission === false) {
+  if (state.hasPermission === false) {
     return (
       <View style={styles.container}>
         <Text style={styles.text}>No access to camera</Text>
@@ -158,47 +115,38 @@ export default function AddScreen() {
       }
     }
     return null;
-  }
+  };
 
   const handleTypeInput = (data, selectedIndex) => {
-    setbarcodeTypeIndex(selectedIndex);
-
-    if (barcodeValue === "") {
-      setIsBarcodeValid(null);
+    dispatch({ type: "SET_BARCODE_TYPE_INDEX", payload: selectedIndex });
+    if (state.barcodeValue === "") {
+      dispatch({ type: "SET_IS_BARCODE_VALID", payload: null });
       return;
     }
-
-
-    if (validateBarcode(barcodeValue, selectedIndex)) {
-      setIsBarcodeValid(true);
+    if (validateBarcode(state.barcodeValue, selectedIndex)) {
+      dispatch({ type: "SET_IS_BARCODE_VALID", payload: true });
       return;
     }
+    dispatch({ type: "SET_IS_BARCODE_VALID", payload: false });
+  };
 
-    setIsBarcodeValid(false);
-  }
-
-
-  const hadnleBarcodeInput = (newValue) => {
-    setBarcodeValue(newValue)
-
-    if (newValue === "") {
-      setIsBarcodeValid(null);
+  const handleBarcodeInput = (newType) => {
+    dispatch({ type: "SET_BARCODE_VALUE", payload: newType });
+    if (newType === "") {
+      dispatch({ type: "SET_IS_BARCODE_VALID", payload: null });
       return;
     }
-
-    let typeIndex = findType(newValue);
+    let typeIndex = findType(newType);
     if (typeIndex !== null) {
-      setbarcodeTypeIndex(typeIndex);
-      setIsBarcodeValid(true);
+      dispatch({ type: "SET_BARCODE_TYPE_INDEX", payload: typeIndex });
+      dispatch({ type: "SET_IS_BARCODE_VALID", payload: true });
       return;
     }
-
-    setIsBarcodeValid(false);
-  }
+    dispatch({ type: "SET_IS_BARCODE_VALID", payload: false });
+  };
 
   const renderType = (data, index) => {
-    const textStyle = index === barcodeTypeIndex ? { fontSize: 30 } : {};
-
+    const textStyle = index === state.barcodeTypeIndex ? { fontSize: 30 } : {};
     return (
       <View>
         <Text style={textStyle}>{data}</Text>
@@ -207,132 +155,62 @@ export default function AddScreen() {
   };
 
   return (
-    // <TouchableWithoutFeedback onPress={() => {
-    //   Keyboard.dismiss();
-    //   console.log("dismissed keyboard")
-    // }}>
-      <View style={styles.container}>
-        <View style={[styles.barcodebox, { borderColor }]}>
-          <BarCodeScanner
-            onBarCodeScanned={scanned ? undefined : handleBarCodeScanned}
-            style={{ height: 400, width: 400 }}
-          />
-        </View>
-        {scanned && (
-          <TouchableOpacity
-            style={styles.button}
-            onPress={() => {
-              setScanned(false);
-              setBorderColor("#CCCCCC");
-              setBarcodeValue("");
-              setbarcodeTypeIndex(null);
-            }}
-          >
-            <Text style={styles.text}>Kliknij, aby zeskanować ponownie</Text>
-          </TouchableOpacity>
-        )}
-
-        <View style={styles.typePicker}>
-          <ScrollPicker
-            dataSource={barcodeTypes}
-            selectedIndex={1}
-            renderItem={renderType}
-            onValueChange={handleTypeInput}
-            wrapperHeight={180}
-            wrapperWidth={150}
-            wrapperColor="#FFFFFF"
-            itemHeight={60}
-            highlightColor="#d8d8d8"
-            highlightBorderWidth={2}
-          />
-        </View>
-
-        <TextInput
-          style={[styles.input, { borderColor }]}
-          value={barcodeValue}
-          onChangeText={hadnleBarcodeInput}
-          placeholder="barcode"
-          placeholderTextColor="#9E9E9E"
+    <View style={styles.container}>
+      <View style={[styles.barcodebox, { borderColor: state.borderColor }]}>
+        <BarCodeScanner
+          onBarCodeScanned={state.scanned ? undefined : handleBarCodeScanned}
+          style={{ height: 400, width: 400 }}
         />
-  
-        <TextInput
-          style={styles.input}
-          value={name}
-          onChangeText={setName}
-          placeholder="name"
-          placeholderTextColor="#9E9E9E"
-        />
-        {splashVisible && <SplashScreen />}
-        <Pressable
-          style={styles.pressable}
-          onPress={() => addBarcode(name, barcodeValue, barcodeTypeIndex)}
-        >
-          <Text style={styles.text}>Dodaj</Text>
-        </Pressable>
       </View>
-    // </TouchableWithoutFeedback>
+      {state.scanned && (
+        <TouchableOpacity
+          style={styles.button}
+          onPress={() => {
+            dispatch({ type: "SET_SCANNED", payload: false });
+            dispatch({ type: "SET_BORDER_COLOR", payload: "#CCCCCC" });
+            dispatch({ type: "SET_BARCODE_VALUE", payload: "" });
+            dispatch({ type: "SET_BARCODE_TYPE_INDEX", payload: null });
+          }}
+        >
+          <Text style={styles.text}>Kliknij, aby zeskanować ponownie</Text>
+        </TouchableOpacity>
+      )}
+      <View style={styles.typePicker}>
+        <ScrollPicker
+          dataSource={barcodeTypes}
+          selectedIndex={state.barcodeTypeIndex}
+          renderItem={renderType}
+          onValueChange={handleTypeInput}
+          wrapperHeight={180}
+          wrapperWidth={150}
+          wrapperColor="#FFFFFF"
+          itemHeight={60}
+          highlightColor="#d8d8d8"
+          highlightBorderWidth={2}
+        />
+      </View>
+      <TextInput
+        style={[styles.input, { borderColor: state.borderColor }]}
+        value={state.barcodeValue}
+        onChangeText={handleBarcodeInput}
+        placeholder="barcode"
+        placeholderTextColor="#9E9E9E"
+      />
+      <TextInput
+        style={[styles.input, { borderColor: "#CCCCCC" }]}
+        value={state.name}
+        onChangeText={(name) => dispatch({ type: "SET_NAME", payload: name })}
+        placeholder="name"
+        placeholderTextColor="#9E9E9E"
+      />
+      {state.splashVisible && <SplashScreen />}
+      <Pressable
+        style={styles.pressable}
+        onPress={() =>
+          addBarcode(state.name, state.barcodeValue, state.barcodeTypeIndex)
+        }>
+        <Text style={styles.text}>Dodaj</Text>
+      </Pressable>
+    </View>
   );
 }
-
-const styles = StyleSheet.create({
-  typePicker: {
-    height: 150,
-    width: "80%",
-  },
-  container: {
-    flex: 1,
-    backgroundColor: "#f0e6d2",
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  input: {
-    height: 40,
-    margin: 12,
-    borderWidth: 1,
-    borderColor: "#CCCCCC",
-    borderRadius: 4,
-    backgroundColor: "#FFFFFF",
-    width: "80%",
-    color: "#000000",
-    padding: 10,
-  },
-  barcodebox: {
-    alignItems: "center",
-    justifyContent: "center",
-    width: "80%",
-    height: "40%",
-    overflow: "hidden",
-    borderRadius: 4,
-    backgroundColor: "#FFFFFF",
-    shadowColor: "#000",
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.25,
-    shadowRadius: 4,
-    elevation: 5,
-    marginBottom: 20,
-    borderWidth: 2,
-  },
-  button: {
-    alignItems: "center",
-    justifyContent: "center",
-    margin: 10,
-    padding: 10,
-    borderRadius: 4,
-    backgroundColor: "#6e3b6e",
-  },
-  pressable: {
-    backgroundColor: "#6e3b6e",
-    paddingHorizontal: 50,
-    paddingVertical: 10,
-    borderRadius: 4,
-    margin: 10,
-  },
-  text: {
-    color: "#FFFFFF",
-    fontWeight: "bold",
-    fontSize: 16,
-  },
-});

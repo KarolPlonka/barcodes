@@ -58,6 +58,7 @@ export default function App() {
   storeData();
 
   return (
+
     <NavigationContainer>
       <Stack.Navigator>
         <Stack.Screen
