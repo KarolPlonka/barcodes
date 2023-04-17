@@ -7,6 +7,8 @@ export const initialState = {
     borderColor: "#CCCCCC",
     splashVisible: false,
     isBarcodeValid: null,
+    isLogoPickerVisible: false,
+    logo: null,
   };
   
 export function reducer(state, action) {
@@ -27,6 +29,10 @@ export function reducer(state, action) {
         return { ...state, splashVisible: action.payload };
       case 'SET_IS_BARCODE_VALID':
         return { ...state, isBarcodeValid: action.payload };
+      case 'SET_IS_LOGO_PICKER_VISBLE':
+        return { ...state, isLogoPickerVisible: action.payload };
+      case 'SET_LOGO':
+        return { ...state, logo: action.payload };
       default:
         throw new Error('Invalid action type');
     }

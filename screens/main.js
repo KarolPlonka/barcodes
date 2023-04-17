@@ -6,6 +6,7 @@ import {
   TouchableOpacity,
   Dimensions,
   View,
+  Image,
 } from "react-native";
 
 // Navigation modules
@@ -38,6 +39,9 @@ const Item = React.memo(({ item, drag, onPress }) => {
             background={"white"}
             color={"white"}
           />
+        </View>
+        <View>
+          {item.logo !== null && <Image source={item.logo.uri} style={styles.logo} />}
         </View>
       </TouchableOpacity>
     </ScaleDecorator>
@@ -224,6 +228,11 @@ const styles = StyleSheet.create({
     right: 20,
     alignSelf: "flex-end",
   },
+  logo: {
+    resizeMode: 'contain',
+    height: 60,
+    width: 100,
+  }
 });
 
 export default MainScreen;

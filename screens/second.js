@@ -8,12 +8,16 @@ import {
   TextInput,
   TouchableOpacity,
   Alert,
+  Modal,
+  Image,
 } from "react-native";
 import { StyleSheet } from "react-native";
 
 // Import Expo BarCodeScanner and react-navigation hook
 import { BarCodeScanner } from "expo-barcode-scanner";
 import { useNavigation } from "@react-navigation/native";
+
+import LogoPicker from "../components/logoPicker";
 
 // Import custom components and functions
 import SplashScreen from "./splash";
@@ -80,7 +84,7 @@ export default function AddScreen() {
     }
   };
 
-  async function addBarcode(name, barcodeValue, barcodeTypeIndex) {
+  async function addBarcode(name, barcodeValue, barcodeTypeIndex, logo) {
     if (!name || !barcodeValue) {
       Alert.alert("Błąd", "Wypełnij wszystkie pola");
       return;
@@ -96,6 +100,7 @@ export default function AddScreen() {
         title: name,
         barcode: barcodeValue,
         type: barcodeTypes[barcodeTypeIndex],
+        logo: logo,
       });
       navigation.navigate("MainScreen", { newBarcode: barcodeValue });
       dispatch({ type: "SET_SPLASH_VISIBLE", payload: false });
@@ -168,6 +173,11 @@ export default function AddScreen() {
     );
   };
 
+  const handleLogoPick = (logo) => {
+    dispatch({ type: "SET_IS_LOGO_PICKER_VISBLE", payload: false });
+    dispatch({ type: "SET_LOGO", payload: logo });
+  }
+
   return (
     <View style={styles.container} onLayout={handleOnLayout}>
       <View style={[styles.barcodebox, { borderColor: state.borderColor }]}>
@@ -203,6 +213,37 @@ export default function AddScreen() {
           highlightBorderWidth={2}
         />
       </View>
+
+      <View style={styles.logoRow}>
+        {state.logo !== null && <Image source={state.logo.uri} style={styles.logo} />}
+
+        <TouchableOpacity
+          style={styles.button}
+          onPress={() => {
+            dispatch({ type: "SET_IS_LOGO_PICKER_VISBLE", payload: true });
+          }}
+        >
+          <Text>Select Logo</Text>
+        </TouchableOpacity>
+      </View>
+
+      <Modal
+        animationType="fade"
+        visible={state.isLogoPickerVisible}
+      >
+        <LogoPicker onLogoPress={handleLogoPick}/>
+
+        <TouchableOpacity
+          style={styles.button}
+          onPress={() => {
+            dispatch({ type: "SET_IS_LOGO_PICKER_VISBLE", payload: false });
+            dispatch({ type: "SET_LOGO", payload: null });
+          }}
+        >
+          <Text>No logo</Text>
+        </TouchableOpacity>
+      </Modal>
+
       <TextInput
         style={[styles.input, { borderColor: state.borderColor }]}
         value={state.barcodeValue}
@@ -221,7 +262,7 @@ export default function AddScreen() {
       <Pressable
         style={styles.pressable}
         onPress={() =>
-          addBarcode(state.name, state.barcodeValue, state.barcodeTypeIndex)
+          addBarcode(state.name, state.barcodeValue, state.barcodeTypeIndex, state.logo)
         }>
         <Text style={styles.text}>Dodaj</Text>
       </Pressable>
@@ -234,7 +275,7 @@ const styles = StyleSheet.create({
     typePicker: {
         height: 150,
         width: "80%",
-        marginBottom: 20,
+        padding: 10,
     },
     container: {
         flex: 1,
@@ -259,7 +300,7 @@ const styles = StyleSheet.create({
         alignItems: "center",
         justifyContent: "center",
         width: "80%",
-        height: "40%",
+        height: "35%",
         overflow: "hidden",
         borderRadius: 50, //Changed from 4 to 50
         backgroundColor: "#1C3A77",
@@ -292,5 +333,16 @@ const styles = StyleSheet.create({
         textAlign: "center",
         alignSelf: "flex-start", //Added to experiment with unusual text alignments
     },
+    logo: {
+      resizeMode: 'contain',
+      height: 60,
+      width: 200,
+    },
+    logoRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'center',
+      padding: 10,
+    }
 });
 

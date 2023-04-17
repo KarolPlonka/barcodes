@@ -8,6 +8,8 @@ import {
     TouchableOpacity,
     Dimensions,
     View,
+    Image,
+    Modal,
 } from "react-native";
 import Barcode from "@kichiyaki/react-native-barcode-generator";
 import { useNavigation } from "@react-navigation/native";
@@ -23,6 +25,7 @@ export default function SelectedScreen({ route }) {
     const [selectedBarcode, setSelectedBarcode] = useState(route.params.selectedBarcode);
     const [hasPermission, setHasPermission] = useState(false);
     const [newBarcodeTitle, setNewBarcodeTitle] = useState(selectedBarcode.title);
+    const [newBarcodeLogo, setNewBarcodeLogo] = useState(selectedBarcode.logo);
     const titleRef = useRef();
     const [fontsLoaded] = useFonts({
         'Actor': require('../assets/fonts/Actor-Regular.ttf'),
@@ -32,6 +35,7 @@ export default function SelectedScreen({ route }) {
         'Coda-Latin-ExtraBold': require('../assets/fonts/coda-latin-ext-800-normal.ttf'),
     });
     const [editMode, setEditMode] = useState(false);
+    const [isLogoPickerVisible, setIsLogoPickerVisible] = useState(false);
 
     const handleEditMode = (value) => {
         setEditMode(value);
@@ -39,7 +43,7 @@ export default function SelectedScreen({ route }) {
 
     const handleOnPress = () => {
         if (editMode) {
-            updateBarcode(selectedBarcode, newBarcodeTitle, setEditMode);
+            updateBarcode(selectedBarcode, newBarcodeTitle);
             setSelectedBarcode({ ...selectedBarcode, title: newBarcodeTitle });
             setNewBarcodeTitle("");
             setEditMode(false);
@@ -65,6 +69,34 @@ export default function SelectedScreen({ route }) {
             setHasPermission(status)
         }
         Brightness.setSystemBrightnessAsync(1);
+    }
+
+    const handleBarcodeUpdate = () => {
+        const updatedBarcode = {
+            barcode: selectedBarcode.barcode,
+            title: newBarcodeTitle,
+            logo: newBarcodeLogo,
+            type: selectedBarcode.type
+        }
+        updateBarcode(selectedBarcode, updatedBarcode);
+        setSelectedBarcode(updatedBarcode);
+        setEditMode(false);
+    }
+
+    const handleLogoPick = (logo) => {
+        setNewBarcodeLogo(logo);
+        setIsLogoPickerVisible(false);
+    }
+
+    const handleDeclinePress = () => {
+        setEditMode(false);
+        setNewBarcodeTitle(selectedBarcode.title);
+        setNewBarcodeLogo(selectedBarcode.logo);
+    }
+
+    const handleNoLogoPress = () => {
+        setNewBarcodeLogo(null);
+        setIsLogoPickerVisible(false);
     }
 
     if (!fontsLoaded) {
@@ -100,6 +132,33 @@ export default function SelectedScreen({ route }) {
                         color={"white"}
                     />
                 </View>
+                
+                
+                <View style={styles.logoRow}>
+                    {newBarcodeLogo && <Image source={newBarcodeLogo.uri} style={styles.logo} />}
+
+                    {editMode && <TouchableOpacity
+                        style={styles.logoButton}
+                        onPress={() => {setIsLogoPickerVisible(true)}}
+                    >
+                        <Text>Select Logo</Text>
+                    </TouchableOpacity>}
+                </View>
+
+                <Modal
+                    animationType="fade"
+                    visible={isLogoPickerVisible}
+                >
+                    <LogoPicker onLogoPress={handleLogoPick} />
+
+                    <TouchableOpacity
+                        style={styles.logoButton}
+                        onPress={handleNoLogoPress}
+                    >
+                        <Text>No logo</Text>
+                    </TouchableOpacity>
+                </Modal>
+        
                 <TouchableOpacity
                     onPress={() => { deleteBarcode(selectedBarcode, navigation) }}
                     style={[styles.deleteButton, { backgroundColor: "#FF6B6C", borderRadius: 50, width: 50, height: 50, alignItems: "center", justifyContent: "center" }]}
@@ -108,13 +167,13 @@ export default function SelectedScreen({ route }) {
                 </TouchableOpacity>
                 {editMode ? (<>
                     <TouchableOpacity
-                        onPress={() => { updateBarcode(selectedBarcode, newBarcodeTitle, handleEditMode) }}
+                        onPress={() => { handleBarcodeUpdate(selectedBarcode) }}
                         style={[styles.confirmButton, { backgroundColor: "#1C3A77", borderRadius: 50, width: 50, height: 50, alignItems: "center", justifyContent: "center" }]}
                     >
                         <Feather name="check" size={30} color="white" />
                     </TouchableOpacity>
                     <TouchableOpacity
-                        onPress={() => { handleEditMode(false) }}
+                        onPress={handleDeclinePress}
                         style={[styles.declineButton, { backgroundColor: "#FF6B6C", borderRadius: 50, width: 50, height: 50, alignItems: "center", justifyContent: "center" }]}
                     >
                         <Feather name="x" size={30} color="white" />
@@ -206,4 +265,24 @@ const styles = StyleSheet.create({
         top: 20,
         left: 20,
     },
+    logo: {
+      resizeMode: 'contain',
+      height: 60,
+      width: 100,
+    },
+    logoButton: {
+        alignItems: "center",
+        justifyContent: "center",
+        margin: 10,
+        padding: 10,
+        borderRadius: 4,
+        backgroundColor: "#FF6B6C",
+    },
+    logoRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'center',
+      padding: 10,
+      marginRight: 'auto',
+    }
 });

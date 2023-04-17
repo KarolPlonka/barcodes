@@ -1,57 +1,60 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Alert } from "react-native";
 import * as Font from 'expo-font';
+import {logos} from '../components/logoPicker'
 
-export const updateBarcode = async (selectedBarcode, newTitle, setEditMode) => {
+export const updateBarcode = async (selectedBarcode, updatedBarcode) => {
   try {
     const barcodes = await getData();
     const updatedBarcodes = barcodes.map(barcode => {
       if (barcode.barcode === selectedBarcode.barcode) {
-        return { ...barcode, title: newTitle };
+        return updatedBarcode;
       } else {
         return barcode;
       }
     });
-    selectedBarcode.title = newTitle;
     await AsyncStorage.setItem("barcodes", JSON.stringify(updatedBarcodes));
-    setEditMode(false);
   } catch (error) {
     console.error(error);
   }
 };
 
-
-
 const testBARCODES = [
   {
     title: 'BIEDRONKA',
     barcode: '978020137962',
-    type: 'EAN13'
+    type: 'EAN13',
+    logo: logos[0],
   },
   {
     title: 'ORLEN',
     barcode: '123456789123',
-    type: 'EAN13'
+    type: 'EAN13',
+    logo: logos[1],
   },
   {
     title: 'LIDL',
     barcode: '223456789123',
-    type: 'EAN13'
+    type: 'EAN13',
+    logo: null,
   },
   {
     title: 'TESCO',
     barcode: '443456789123',
-    type: 'EAN13'
+    type: 'EAN13',
+    logo: null,
   },
   {
     title: 'TESTCO',
     barcode: '553456789123',
-    type: 'EAN13'
+    type: 'EAN13',
+    logo: null,
   },
   {
     title: 'SHEESH',
     barcode: '663456789123',
-    type: 'EAN13'
+    type: 'EAN13',
+    logo: null,
   },
 ];
 
