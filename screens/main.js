@@ -1,5 +1,5 @@
 // React and React Native modules
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import {
   SafeAreaView,
   Text,
@@ -16,11 +16,10 @@ import DraggableFlatList, { ScaleDecorator } from "react-native-draggable-flatli
 import Barcode from "@kichiyaki/react-native-barcode-generator";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Feather } from '@expo/vector-icons';
+import { useFonts } from "expo-font";
 
 // Local modules
 import SplashScreen from "./splash";
-import styles from "../assets/styles";
-import { storeData } from "../utils/utils";
 
 const Item = React.memo(({ item, drag, onPress }) => {
   return (
@@ -54,6 +53,19 @@ const MainScreen = ({ navigation }) => {
   const [BARCODES, setBARCODES] = useState([]);
   const [splashVisible, setSplashVisible] = useState(false);
   const isFocused = useIsFocused();
+  const [fontsLoaded] = useFonts({
+    'Actor': require('../assets/fonts/Actor-Regular.ttf'),
+    'Coda-Latin': require('../assets/fonts/coda-latin-400-normal.ttf'),
+    'Coda-Latin-Bold': require('../assets/fonts/coda-latin-800-normal.ttf'),
+    'Coda-Latin-SemiBold': require('../assets/fonts/coda-latin-ext-400-normal.ttf'),
+    'Coda-Latin-ExtraBold': require('../assets/fonts/coda-latin-ext-800-normal.ttf'),
+});
+
+  const handleOnLayout = useCallback(async () => {
+    if (fontsLoaded) {
+      await SplashScreen.hideAsync();
+    }
+  }, [fontsLoaded]);
 
   useEffect(() => {
     const loadBarcodes = async () => {
@@ -69,13 +81,14 @@ const MainScreen = ({ navigation }) => {
       loadBarcodes();
     }
   }, [isFocused]);
-  
+
 
   const renderItem = ({ item, drag }) => {
     return (
       <Item
         item={item}
         drag={drag}
+        styles={styles}
         onPress={() => {
           navigation.navigate("SelectedScreen", { selectedBarcode: item });
         }}
@@ -83,17 +96,20 @@ const MainScreen = ({ navigation }) => {
     );
   };
 
+  if (!fontsLoaded) {
+    return null;
+  }
+
   const refreshPage = () => {
     setSplashVisible(true);
     setTimeout(() => {
       navigation.navigate("MainScreen");
-      storeData();
       setSplashVisible(false);
-    }, 2000); // Adjust this time based on your splash screen animation duration
+    }, 5000); // Adjust this time based on your splash screen animation duration
   };
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={styles.container} onLayout={handleOnLayout}>
       {splashVisible && <SplashScreen />}
       <View style={{ flex: 1, marginBottom: 10 }}>
         <TouchableOpacity onPress={refreshPage} style={{ alignSelf: "center", marginVertical: 5 }}>
@@ -120,5 +136,94 @@ const MainScreen = ({ navigation }) => {
 
   );
 };
+
+
+import { StyleSheet, StatusBar } from "react-native";
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: "#D6D9E0",
+    marginTop: StatusBar.currentHeight || 0,
+    fontFamily: "Coda-Latin-Bold",
+  },
+  typePicker: {
+    height: 150,
+    width: "80%",
+    alignSelf: "center",
+    borderRadius: 20,
+    borderWidth: 2,
+    borderColor: "#1C3A77",
+  },
+  pressable: {
+    backgroundColor: "#1C3A77",
+    paddingHorizontal: 50,
+    paddingVertical: 10,
+    borderRadius: 20,
+    margin: 10,
+    borderWidth: 2,
+    borderColor: "#D6D9E0",
+  },
+  item: {
+    backgroundColor: "white",
+    padding: 20,
+    marginVertical: 10,
+    marginHorizontal: 18,
+    borderRadius: 15,
+    borderWidth: 2,
+    borderColor: "#1C3A77",
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+    elevation: 5,
+    fontFamily: "Actor",
+  },
+  title: {
+    color: "#1C3A77",
+    fontSize: 24,
+    fontWeight: "bold",
+    fontFamily: "Coda-Latin-Bold",
+  },
+  addButton: {
+    width: 60,
+    height: 60,
+    borderRadius: 30,
+    backgroundColor: "#FF6B6C",
+    justifyContent: "center",
+    alignItems: "center",
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+    elevation: 5,
+  },
+  addButtonText: {
+    color: "white",
+    fontSize: 36,
+    fontWeight: "bold",
+  },
+  titleWrapper: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: 10,
+  },
+  barcodeWrapper: {
+    marginBottom: 10,
+  },
+  addButtonWrapper: {
+    position: "absolute",
+    bottom: 20,
+    right: 20,
+    alignSelf: "flex-end",
+  },
+});
 
 export default MainScreen;

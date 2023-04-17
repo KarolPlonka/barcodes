@@ -1,5 +1,26 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Alert } from "react-native";
+import * as Font from 'expo-font';
+
+export const updateBarcode = async (selectedBarcode, newTitle, setEditMode) => {
+  try {
+    const barcodes = await getData();
+    const updatedBarcodes = barcodes.map(barcode => {
+      if (barcode.barcode === selectedBarcode.barcode) {
+        return { ...barcode, title: newTitle };
+      } else {
+        return barcode;
+      }
+    });
+    selectedBarcode.title = newTitle;
+    await AsyncStorage.setItem("barcodes", JSON.stringify(updatedBarcodes));
+    setEditMode(false);
+  } catch (error) {
+    console.error(error);
+  }
+};
+
+
 
 const testBARCODES = [
   {
@@ -77,3 +98,57 @@ export const checkBarcode = async (barcode) => {
   return false;
 };
 
+export const getData = async () => {
+  try {
+    const jsonValue = await AsyncStorage.getItem("barcodes");
+    return jsonValue !== null ? JSON.parse(jsonValue) : [];
+  } catch (e) {
+    console.log(e);
+  }
+}
+
+export const deleteBarcode = (barcode, navigation) => {
+  Alert.alert(
+      "Usuń kartę",
+      "Czy jesteś pewny/a, że chcesz usunąć tę kartę?",
+      [
+          {
+              text: "Wyjdź",
+              onPress: () => console.log("Wyjście..."),
+              style: "cancel",
+          },
+          {
+              text: "Usuń",
+              onPress: async () => {
+                  try {
+                      const barcodes = await getData();
+                      const updatedBarcodes = barcodes.filter(
+                          (item) => item.barcode !== barcode.barcode
+                      );
+                      await AsyncStorage.setItem(
+                          "barcodes",
+                          JSON.stringify(updatedBarcodes)
+                      );
+                      //setBARCODES(updatedBarcodes);
+                  } catch (e) {
+                      console.log(e);
+                  }
+                  navigation.navigate("MainScreen", { deleted: true });
+              },
+              style: "destructive",
+          },
+      ]
+  );
+};
+
+
+
+export const loadFonts = async () => {
+  return await Font.loadAsync({
+    'Actor': require('../assets/fonts/Actor-Regular.ttf'),
+    'Coda-Latin': require('../assets/fonts/coda-latin-400-normal.ttf'),
+    'Coda-Latin-Bold': require('../assets/fonts/coda-latin-800-normal.ttf'),
+    'Coda-Latin-SemiBold': require('../assets/fonts/coda-latin-ext-400-normal.ttf'),
+    'Coda-Latin-ExtraBold': require('../assets/fonts/coda-latin-ext-800-normal.ttf'),
+  });
+};

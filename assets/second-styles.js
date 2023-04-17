@@ -7,7 +7,7 @@ const styles = StyleSheet.create({
     },
     container: {
         flex: 1,
-        backgroundColor: "#f0e6d2",
+        backgroundColor: "#FFFFFF",
         alignItems: "center",
         justifyContent: "center",
         flexDirection: "column",
@@ -20,7 +20,9 @@ const styles = StyleSheet.create({
         padding: 10,
         width: "80%",
         borderRadius: 4,
-        backgroundColor: "#FFFFFF",
+        backgroundColor: "#D6D9E0",
+        color: "#333333",
+        fontFamily: "Helvetica",
     },
     barcodebox: {
         alignItems: "center",
@@ -28,18 +30,11 @@ const styles = StyleSheet.create({
         width: "80%",
         height: "40%",
         overflow: "hidden",
-        borderRadius: 4,
-        backgroundColor: "#FFFFFF",
-        shadowColor: "#000",
-        shadowOffset: {
-            width: 0,
-            height: 2,
-        },
-        shadowOpacity: 0.25,
-        shadowRadius: 4,
-        elevation: 5,
+        borderRadius: 50, //Changed from 4 to 50
+        backgroundColor: "#1C3A77",
         marginBottom: 20,
         borderWidth: 2,
+        borderColor: "#D6D9E0",
     },
     button: {
         alignItems: "center",
@@ -47,19 +42,24 @@ const styles = StyleSheet.create({
         margin: 10,
         padding: 10,
         borderRadius: 4,
-        backgroundColor: "#6e3b6e",
+        backgroundColor: "#FF6B6C",
     },
     pressable: {
-        backgroundColor: "#6e3b6e",
+        backgroundColor: "#1C3A77",
         paddingHorizontal: 50,
         paddingVertical: 10,
-        borderRadius: 4,
+        borderRadius: 50, //Changed from 4 to 50
         margin: 10,
+        borderColor: "#D6D9E0",
+        borderWidth: 2,
     },
     text: {
         color: "#FFFFFF",
         fontWeight: "bold",
         fontSize: 16,
+        fontFamily: "Helvetica",
+        textAlign: "center",
+        alignSelf: "flex-start", //Added to experiment with unusual text alignments
     },
 });
 

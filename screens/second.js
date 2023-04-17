@@ -1,5 +1,5 @@
 // Import React and React Native components
-import React, { useEffect, useReducer } from "react";
+import React, { useEffect, useReducer, useCallback } from "react";
 import {
   Text,
   View,
@@ -9,6 +9,7 @@ import {
   TouchableOpacity,
   Alert,
 } from "react-native";
+import { StyleSheet } from "react-native";
 
 // Import Expo BarCodeScanner and react-navigation hook
 import { BarCodeScanner } from "expo-barcode-scanner";
@@ -24,11 +25,24 @@ import {
 } from "./barcodesHandler";
 import { appendData, checkBarcode } from "../utils/utils";
 import { reducer, initialState } from "../utils/reducer";
-import styles from "../assets/second-styles";
+import { useFonts } from "expo-font";
 
 export default function AddScreen() {
   const [state, dispatch] = useReducer(reducer, initialState);
   const navigation = useNavigation();
+  const [fontsLoaded] = useFonts({
+    'Actor': require('../assets/fonts/Actor-Regular.ttf'),
+    'Coda-Latin': require('../assets/fonts/coda-latin-400-normal.ttf'),
+    'Coda-Latin-Bold': require('../assets/fonts/coda-latin-800-normal.ttf'),
+    'Coda-Latin-SemiBold': require('../assets/fonts/coda-latin-ext-400-normal.ttf'),
+    'Coda-Latin-ExtraBold': require('../assets/fonts/coda-latin-ext-800-normal.ttf'),
+  });
+
+  const handleOnLayout = useCallback(async () => {
+    if (fontsLoaded) {
+      await SplashScreen.hideAsync();
+    }
+  }, [fontsLoaded]);
 
   const askForCameraPermission = () => {
     (async () => {
@@ -85,7 +99,7 @@ export default function AddScreen() {
       });
       navigation.navigate("MainScreen", { newBarcode: barcodeValue });
       dispatch({ type: "SET_SPLASH_VISIBLE", payload: false });
-    }, 1500);
+    }, 5000);
   }
 
   // Check permissions and return the actual screen
@@ -155,7 +169,7 @@ export default function AddScreen() {
   };
 
   return (
-    <View style={styles.container}>
+    <View style={styles.container} onLayout={handleOnLayout}>
       <View style={[styles.barcodebox, { borderColor: state.borderColor }]}>
         <BarCodeScanner
           onBarCodeScanned={state.scanned ? undefined : handleBarCodeScanned}
@@ -214,3 +228,69 @@ export default function AddScreen() {
     </View>
   );
 }
+
+
+const styles = StyleSheet.create({
+    typePicker: {
+        height: 150,
+        width: "80%",
+        marginBottom: 20,
+    },
+    container: {
+        flex: 1,
+        backgroundColor: "#FFFFFF",
+        alignItems: "center",
+        justifyContent: "center",
+        flexDirection: "column",
+    },
+    input: {
+        height: 40,
+        marginTop: 10,
+        borderWidth: 1,
+        marginHorizontal: 10,
+        padding: 10,
+        width: "80%",
+        borderRadius: 4,
+        backgroundColor: "#D6D9E0",
+        color: "#333333",
+        fontFamily: "Coda-Latin",
+    },
+    barcodebox: {
+        alignItems: "center",
+        justifyContent: "center",
+        width: "80%",
+        height: "40%",
+        overflow: "hidden",
+        borderRadius: 50, //Changed from 4 to 50
+        backgroundColor: "#1C3A77",
+        marginBottom: 20,
+        borderWidth: 2,
+        borderColor: "#D6D9E0",
+    },
+    button: {
+        alignItems: "center",
+        justifyContent: "center",
+        margin: 10,
+        padding: 10,
+        borderRadius: 4,
+        backgroundColor: "#FF6B6C",
+    },
+    pressable: {
+        backgroundColor: "#1C3A77",
+        paddingHorizontal: 50,
+        paddingVertical: 10,
+        borderRadius: 50, //Changed from 4 to 50
+        margin: 10,
+        borderColor: "#D6D9E0",
+        borderWidth: 2,
+    },
+    text: {
+        color: "#FFFFFF",
+        fontWeight: "bold",
+        fontSize: 16,
+        fontFamily: "Coda-Latin",
+        textAlign: "center",
+        alignSelf: "flex-start", //Added to experiment with unusual text alignments
+    },
+});
+

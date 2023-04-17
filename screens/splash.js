@@ -38,9 +38,9 @@ export default function SplashScreen() {
           speed={1}
           style={{
             alignSelf: "center",
-            height: 200,
+            height: 400,
           }}
-          source={require("../assets/testing2.json")}
+          source={require("../assets/splash-4.json")}
           renderMode={"SOFTWARE"}
         />
       </View>
