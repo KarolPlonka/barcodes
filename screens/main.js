@@ -18,6 +18,7 @@ import Barcode from "@kichiyaki/react-native-barcode-generator";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Feather } from '@expo/vector-icons';
 import { useFonts } from "expo-font";
+import { GestureHandlerRootView } from "react-native-gesture-handler";
 
 // Local modules
 import SplashScreen from "./splash";
@@ -120,12 +121,15 @@ const MainScreen = ({ navigation }) => {
           <Feather name="refresh-ccw" size={24} color="black" />
         </TouchableOpacity>
 
-        <DraggableFlatList
-          data={BARCODES}
-          renderItem={renderItem}
-          keyExtractor={(item) => `draggable-item-${item.barcode}`}
-          onDragEnd={({ data }) => handleDragDrop(data, setBARCODES)}
-        />
+        <GestureHandlerRootView style={{ flex: 1 }} >
+          <DraggableFlatList
+            data={BARCODES}
+            renderItem={renderItem}
+            keyExtractor={(item) => `draggable-item-${item.barcode}`}
+            onDragEnd={({ data }) => handleDragDrop(data, setBARCODES)}
+          />
+        </GestureHandlerRootView>
+
       </View>
 
       <View style={styles.addButtonWrapper}>
