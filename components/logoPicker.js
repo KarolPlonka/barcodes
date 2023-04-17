@@ -1,24 +1,27 @@
 import React from 'react';
 import {
+    Text,
     FlatList,
     Image,
     TouchableOpacity,
     Dimensions,
+    Modal,
 } from 'react-native';
 
-const logosUri = "../assets/logos/";
+const logosDir = "../assets/logos/";
 
 export const logos = [
-    {uri: require(logosUri + "biedronka.png"), color: 'red'},
-    {uri: require(logosUri + "orlen.png"), color: 'red'},
-    {uri: require(logosUri + "bp.png"), color: 'red'},
-    {uri: require(logosUri + "carrefour.png"), color: 'red'},
-    {uri: require(logosUri + "lidl.png"), color: 'red'},
-    {uri: require(logosUri + "swastika.png"), color: 'red'},
-    {uri: require(logosUri + "zabka.png"), color: 'red'},
+    {uri: require(logosDir + "biedronka.png"), color: 'red'},
+    {uri: require(logosDir + "orlen.png"), color: 'red'},
+    {uri: require(logosDir + "bp.png"), color: 'red'},
+    {uri: require(logosDir + "carrefour.png"), color: 'red'},
+    {uri: require(logosDir + "lidl.png"), color: 'red'},
+    {uri: require(logosDir + "swastika.png"), color: 'red'},
+    {uri: require(logosDir + "zabka.png"), color: 'red'},
 ]
 
-export default LogoPicker = ({onLogoPress}) => {
+export default LogoPicker = ({visible, onLogoPress, onNoLogoPress, backAction}) => {
+    
 
     renderLogo = ({item}) => {
         return(
@@ -29,14 +32,27 @@ export default LogoPicker = ({onLogoPress}) => {
     }
 
     return (
-        <FlatList
-            data={logos}
-            numColumns={3}
-            keyExtractor={(item) => item.uri}
-            renderItem={renderLogo}
-            contentContainerStyle={styles.grid}
+        <Modal
+            visible={visible}
+            animationType='slide'
+            onRequestClose={backAction}
         >
-        </FlatList>
+            <FlatList
+                data={logos}
+                numColumns={3}
+                keyExtractor={(item) => item.uri}
+                renderItem={renderLogo}
+                contentContainerStyle={styles.grid}
+            >
+            </FlatList>
+
+            <TouchableOpacity
+                style={styles.button}
+                onPress={() => onNoLogoPress()}
+            >
+                <Text>No logo</Text>
+            </TouchableOpacity>
+        </Modal>
     )
 };
 
@@ -53,5 +69,13 @@ const styles = StyleSheet.create({
     },
     item: {
         padding: 20,
-    }
+    },
+    button: {
+        alignItems: "center",
+        justifyContent: "center",
+        margin: 10,
+        padding: 10,
+        borderRadius: 4,
+        backgroundColor: "#FF6B6C",
+    },
 });

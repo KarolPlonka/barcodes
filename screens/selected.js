@@ -145,19 +145,12 @@ export default function SelectedScreen({ route }) {
                     </TouchableOpacity>}
                 </View>
 
-                <Modal
-                    animationType="fade"
+                <LogoPicker
                     visible={isLogoPickerVisible}
-                >
-                    <LogoPicker onLogoPress={handleLogoPick} />
-
-                    <TouchableOpacity
-                        style={styles.logoButton}
-                        onPress={handleNoLogoPress}
-                    >
-                        <Text>No logo</Text>
-                    </TouchableOpacity>
-                </Modal>
+                    onLogoPress={handleLogoPick}
+                    onNoLogoPress={handleNoLogoPress}
+                    backAction={() => {setIsLogoPickerVisible(false)}}
+                />
         
                 <TouchableOpacity
                     onPress={() => { deleteBarcode(selectedBarcode, navigation) }}

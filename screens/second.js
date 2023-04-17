@@ -8,7 +8,6 @@ import {
   TextInput,
   TouchableOpacity,
   Alert,
-  Modal,
   Image,
 } from "react-native";
 import { StyleSheet } from "react-native";
@@ -173,10 +172,15 @@ export default function AddScreen() {
     );
   };
 
-  const handleLogoPick = (logo) => {
+  const handleLogoPress = (logo) => {
     dispatch({ type: "SET_IS_LOGO_PICKER_VISBLE", payload: false });
     dispatch({ type: "SET_LOGO", payload: logo });
   }
+
+  const handleNoLogoPress = () => {
+    dispatch({ type: "SET_IS_LOGO_PICKER_VISBLE", payload: false });
+    dispatch({ type: "SET_LOGO", payload: null });
+  } 
 
   return (
     <View style={styles.container} onLayout={handleOnLayout}>
@@ -227,22 +231,14 @@ export default function AddScreen() {
         </TouchableOpacity>
       </View>
 
-      <Modal
-        animationType="fade"
+      <LogoPicker
         visible={state.isLogoPickerVisible}
-      >
-        <LogoPicker onLogoPress={handleLogoPick}/>
-
-        <TouchableOpacity
-          style={styles.button}
-          onPress={() => {
-            dispatch({ type: "SET_IS_LOGO_PICKER_VISBLE", payload: false });
-            dispatch({ type: "SET_LOGO", payload: null });
-          }}
-        >
-          <Text>No logo</Text>
-        </TouchableOpacity>
-      </Modal>
+        onLogoPress={handleLogoPress}
+        onNoLogoPress={handleNoLogoPress}
+        backAction={() => {
+          dispatch({ type: "SET_IS_LOGO_PICKER_VISBLE", payload: false });
+        }}
+      />
 
       <TextInput
         style={[styles.input, { borderColor: state.borderColor }]}
