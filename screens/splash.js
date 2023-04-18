@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { Animated, Easing, View } from "react-native";
 import LottieView from "lottie-react-native";
 
-export function SplashScreenTest() {
+export default function SplashScreenTest() {
   const [lottieProgress] = useState(new Animated.Value(0));
 
   useEffect(() => {

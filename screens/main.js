@@ -43,7 +43,7 @@ const Item = React.memo(({ item, drag, onPress }) => {
           />
         </View>
         <View style={styles.logoWrapper}>
-          {item.logo !== null && <Image source={item.logo.uri} style={styles.logo} />}
+          {item.logo && <Image source={item.logo.uri} style={styles.logo} />}
         </View>
       </TouchableOpacity>
     </ScaleDecorator>
@@ -125,12 +125,11 @@ const MainScreen = ({ navigation }) => {
 
   return (
     <SafeAreaView style={styles.container} onLayout={handleOnLayout}>
-      {splashVisible && <SplashScreenTest />}
+      {splashVisible && <SplashScreenTest /> }
       <View style={{ flex: 1, marginBottom: 10 }}>
-        {/* <TouchableOpacity onPress={refreshPage} style={{ alignSelf: "center", marginVertical: 5 }}>
+        <TouchableOpacity onPress={refreshPage} style={{ alignSelf: "center", marginVertical: 5 }}>
           <Feather name="refresh-ccw" size={24} color="black" />
-        </TouchableOpacity> */}
-
+        </TouchableOpacity>
         <GestureHandlerRootView style={{ flex: 1 }} >
           <DraggableFlatList
             data={BARCODES}
@@ -139,9 +138,7 @@ const MainScreen = ({ navigation }) => {
             onDragEnd={({ data }) => handleDragDrop(data, setBARCODES)}
           />
         </GestureHandlerRootView>
-
       </View>
-
       <View style={styles.addButtonWrapper}>
         <TouchableOpacity
           style={styles.addButton}
@@ -151,7 +148,6 @@ const MainScreen = ({ navigation }) => {
         </TouchableOpacity>
       </View>
     </SafeAreaView>
-
   );
 };
 
