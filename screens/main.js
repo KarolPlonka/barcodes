@@ -22,6 +22,7 @@ import { GestureHandlerRootView } from "react-native-gesture-handler";
 
 // Local modules
 import * as SplashScreen from 'expo-splash-screen';
+import SplashScreenTest from "./splash";
 
 const Item = React.memo(({ item, drag, onPress }) => {
   return (
@@ -124,11 +125,11 @@ const MainScreen = ({ navigation }) => {
 
   return (
     <SafeAreaView style={styles.container} onLayout={handleOnLayout}>
-      {splashVisible && <SplashScreen />}
+      {splashVisible && <SplashScreenTest />}
       <View style={{ flex: 1, marginBottom: 10 }}>
-        <TouchableOpacity onPress={refreshPage} style={{ alignSelf: "center", marginVertical: 5 }}>
+        {/* <TouchableOpacity onPress={refreshPage} style={{ alignSelf: "center", marginVertical: 5 }}>
           <Feather name="refresh-ccw" size={24} color="black" />
-        </TouchableOpacity>
+        </TouchableOpacity> */}
 
         <GestureHandlerRootView style={{ flex: 1 }} >
           <DraggableFlatList
