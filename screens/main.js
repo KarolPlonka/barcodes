@@ -42,7 +42,7 @@ const Item = React.memo(({ item, drag, onPress }) => {
           />
         </View>
         <View>
-          {item.logo !== null && <Image source={item.logo.uri} style={styles.logo} />}
+          {item.logo && <Image source={item.logo.uri} style={styles.logo} />}
         </View>
       </TouchableOpacity>
     </ScaleDecorator>

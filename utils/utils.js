@@ -54,14 +54,13 @@ const testBARCODES = [
     title: 'SHEESH',
     barcode: '663456789123',
     type: 'EAN13',
-    logo: null,
   },
 ];
 
 export const storeData = async () => {
   try {
     const data = await AsyncStorage.getItem('barcodes')
-    if (!data) {
+    if (!data || 1) {
       await AsyncStorage.setItem('barcodes', JSON.stringify(testBARCODES))
       return;
     }
