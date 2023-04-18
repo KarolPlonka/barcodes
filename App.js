@@ -1,12 +1,12 @@
-import React from 'react';
-import { NavigationContainer } from '@react-navigation/native';
-import { createSharedElementStackNavigator } from 'react-navigation-shared-element';
-import { storeData } from './utils/utils';
+import React from "react";
+import { NavigationContainer } from "@react-navigation/native";
+import { createSharedElementStackNavigator } from "react-navigation-shared-element";
+import { storeData } from "./utils/utils";
 
-import MainScreen from './screens/main';
-import AddScreen from './screens/second';
-import SelectedScreen from './screens/selected';
-import LandingScreen from './screens/LandingPage';
+import MainScreen from "./screens/main";
+import AddScreen from "./screens/second";
+import SelectedScreen from "./screens/selected";
+import LandingScreen from "./screens/LandingPage";
 
 const Stack = createSharedElementStackNavigator();
 
@@ -35,10 +35,36 @@ export default function App() {
           cardStyleInterpolator: SlideUpTransition,
         }}
       >
-        <Stack.Screen name="LandingScreen" component={LandingScreen} />
-        <Stack.Screen name="MainScreen" component={MainScreen} />
-        <Stack.Screen name="AddScreen" component={AddScreen} />
-        <Stack.Screen name="SelectedScreen" component={SelectedScreen} />
+        <Stack.Screen
+          name="LandingScreen"
+          component={LandingScreen}
+          screenOptions={{
+            headerShown: false,
+          }}
+        />
+        <Stack.Screen
+          name="MainScreen"
+          component={MainScreen}
+          options={{
+            stackAnimation: "scale_from_center",
+            stackPresentation: "modal",
+          }}
+        />
+        <Stack.Screen
+          name="AddScreen"
+          component={AddScreen}
+          options={{
+            stackAnimation: "slide_from_bottom",
+            stackPresentation: "modal",
+          }}
+        />
+        <Stack.Screen
+          name="SelectedScreen"
+          component={SelectedScreen}
+          screenOptions={{
+            headerShown: false,
+          }}
+        />
       </Stack.Navigator>
     </NavigationContainer>
   );
@@ -200,11 +226,9 @@ export default function App() {
 //   );
 // }
 
-
-
 //   export default function App() {
 //     storeData();
-  
+
 //     return (
 //       <NavigationContainer>
 //         <Stack.Navigator>
@@ -342,4 +366,3 @@ export default function App() {
 // });
 
 // Import React and React Native components
-
