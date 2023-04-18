@@ -60,7 +60,7 @@ const testBARCODES = [
 export const storeData = async () => {
   try {
     const data = await AsyncStorage.getItem('barcodes')
-    if (!data || 1) {
+    if (!data) {
       await AsyncStorage.setItem('barcodes', JSON.stringify(testBARCODES))
       return;
     }
