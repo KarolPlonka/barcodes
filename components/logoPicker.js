@@ -21,7 +21,6 @@ export const logos = [
 ]
 
 export default LogoPicker = ({visible, onLogoPress, onNoLogoPress, backAction}) => {
-    
 
     renderLogo = ({item}) => {
         return(

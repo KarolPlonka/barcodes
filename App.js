@@ -1,40 +1,44 @@
-import MainScreen from "./screens/main";
-import AddScreen from "./screens/second";
-import SelectedScreen from "./screens/selected";
+import React from 'react';
+import { NavigationContainer } from '@react-navigation/native';
+import { createSharedElementStackNavigator } from 'react-navigation-shared-element';
+import { storeData } from './utils/utils';
 
-import { NavigationContainer } from "@react-navigation/native";
-import { createNativeStackNavigator } from "@react-navigation/native-stack";
-import { storeData } from "./utils/utils";
+import MainScreen from './screens/main';
+import AddScreen from './screens/second';
+import SelectedScreen from './screens/selected';
+import LandingScreen from './screens/LandingPage';
 
-const Stack = createNativeStackNavigator();
+const Stack = createSharedElementStackNavigator();
+
+const SlideUpTransition = ({ current, layouts }) => {
+  const translateY = current.progress.interpolate({
+    inputRange: [0, 1],
+    outputRange: [layouts.screen.height, 0],
+  });
+
+  return {
+    cardStyle: {
+      transform: [{ translateY }],
+    },
+  };
+};
 
 export default function App() {
   storeData();
 
   return (
     <NavigationContainer>
-      <Stack.Navigator>
-        <Stack.Screen
-          name="MainScreen"
-          component={MainScreen}
-          options={{
-            headerShown: false,
-          }}
-        />
-        <Stack.Screen
-          name="AddScreen"
-          component={AddScreen}
-          options={{
-            headerShown: false,
-          }}
-        />
-        <Stack.Screen
-          name="SelectedScreen"
-          component={SelectedScreen}
-          options={{
-            headerShown: false,
-          }}
-        />
+      <Stack.Navigator
+        initialRouteName="LandingScreen"
+        screenOptions={{
+          headerShown: false,
+          cardStyleInterpolator: SlideUpTransition,
+        }}
+      >
+        <Stack.Screen name="LandingScreen" component={LandingScreen} />
+        <Stack.Screen name="MainScreen" component={MainScreen} />
+        <Stack.Screen name="AddScreen" component={AddScreen} />
+        <Stack.Screen name="SelectedScreen" component={SelectedScreen} />
       </Stack.Navigator>
     </NavigationContainer>
   );

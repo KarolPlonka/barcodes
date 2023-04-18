@@ -21,7 +21,7 @@ import { useFonts } from "expo-font";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 
 // Local modules
-import SplashScreen from "./splash";
+import * as SplashScreen from 'expo-splash-screen';
 
 const Item = React.memo(({ item, drag, onPress }) => {
   return (
@@ -41,13 +41,17 @@ const Item = React.memo(({ item, drag, onPress }) => {
             color={"white"}
           />
         </View>
-        <View>
-          {item.logo && <Image source={item.logo.uri} style={styles.logo} />}
+        <View style={styles.logoWrapper}>
+          {item.logo !== null && <Image source={item.logo.uri} style={styles.logo} />}
         </View>
       </TouchableOpacity>
     </ScaleDecorator>
   );
 });
+
+SplashScreen.preventAutoHideAsync()
+  .then(result => console.log(`SplashScreen.preventAutoHideAsync() succeeded: ${result}`))
+  .catch(console.warn);
 
 const handleDragDrop = (data, setBARCODES) => {
   AsyncStorage.setItem("barcodes", JSON.stringify(data)).catch((e) => console.log(e));
@@ -64,13 +68,18 @@ const MainScreen = ({ navigation }) => {
     'Coda-Latin-Bold': require('../assets/fonts/coda-latin-800-normal.ttf'),
     'Coda-Latin-SemiBold': require('../assets/fonts/coda-latin-ext-400-normal.ttf'),
     'Coda-Latin-ExtraBold': require('../assets/fonts/coda-latin-ext-800-normal.ttf'),
-});
+  });
 
   const handleOnLayout = useCallback(async () => {
-    if (fontsLoaded) {
-      await SplashScreen.hideAsync();
+    try {
+      if (fontsLoaded) {
+        await SplashScreen.hideAsync();
+      }
+    } catch (error) {
+      console.log('Error in handleOnLayout: ', error);
     }
   }, [fontsLoaded]);
+
 
   useEffect(() => {
     const loadBarcodes = async () => {
@@ -189,6 +198,7 @@ const styles = StyleSheet.create({
     shadowRadius: 3.84,
     elevation: 5,
     fontFamily: "Actor",
+    minHeight: 200,
   },
   title: {
     color: "#1C3A77",
@@ -232,11 +242,17 @@ const styles = StyleSheet.create({
     right: 20,
     alignSelf: "flex-end",
   },
+  logoWrapper: {
+    justifyContent: "center",
+    alignItems: "center",
+    marginTop: 0,
+  },
   logo: {
     resizeMode: 'contain',
     height: 60,
     width: 100,
-  }
+  },
 });
+
 
 export default MainScreen;
