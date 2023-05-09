@@ -29,19 +29,19 @@ export default function App() {
   return (
     <NavigationContainer>
       <Stack.Navigator
-        initialRouteName="LandingScreen"
+        initialRouteName="MainScreen"
         screenOptions={{
           headerShown: false,
           cardStyleInterpolator: SlideUpTransition,
         }}
       >
-        <Stack.Screen
+        {/* <Stack.Screen
           name="LandingScreen"
           component={LandingScreen}
           screenOptions={{
             headerShown: false,
           }}
-        />
+        /> */}
         <Stack.Screen
           name="MainScreen"
           component={MainScreen}

@@ -1,7 +1,9 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Alert } from "react-native";
 import * as Font from 'expo-font';
-import {logos} from '../components/logoPicker'
+import {logos} from '../assets/logos'
+import { manipulateAsync, getImageInfoAsync } from 'expo-image-manipulator';
+
 
 export const updateBarcode = async (selectedBarcode, updatedBarcode) => {
   try {
@@ -60,7 +62,7 @@ const testBARCODES = [
 
 export const storeData = async () => {
   try {
-    const data = await AsyncStorage.getItem('barcodes')
+    const data = await AsyncStorage.getItem('barcodes');
     if (!data || data.length === 0) {
       await AsyncStorage.setItem('barcodes', JSON.stringify(testBARCODES))
       return;
@@ -144,6 +146,15 @@ export const deleteBarcode = (barcode, navigation) => {
   );
 };
 
+export const getLogos = async () => {
+  try {
+    const jsonValue = await AsyncStorage.getItem("uploadedLogos");
+    return jsonValue !== null ? JSON.parse(jsonValue) : [];
+  } catch (e) {
+    console.log(e);
+  }
+}
+
 
 
 export const loadFonts = async () => {
@@ -155,3 +166,20 @@ export const loadFonts = async () => {
     'Coda-Latin-ExtraBold': require('../assets/fonts/coda-latin-ext-800-normal.ttf'),
   });
 };
+
+
+export async function getImageData(juri) {
+
+  const { base64 } = await manipulateAsync(
+    {uri: juri},
+    [{ resize: { width: 300, height: 300 } }],
+    { format: 'png' }
+  );
+
+  // const response = await fetch(`data:image/jpeg;base64,${base64}`);
+  // const arrayBuffer = await response.arrayBuffer();
+  const imageData = new Uint8ClampedArray(base64);
+  console.log(base64);
+
+  return imageData ;
+}

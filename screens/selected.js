@@ -9,7 +9,6 @@ import {
     Dimensions,
     View,
     Image,
-    Modal,
 } from "react-native";
 import Barcode from "@kichiyaki/react-native-barcode-generator";
 import { useNavigation } from "@react-navigation/native";
@@ -135,7 +134,7 @@ export default function SelectedScreen({ route }) {
                 
                 
                 <View style={styles.logoRow}>
-                    {newBarcodeLogo && <Image source={newBarcodeLogo.uri} style={styles.logo} />}
+                    {newBarcodeLogo && <Image source={newBarcodeLogo.source} style={styles.logo} />}
 
                     {editMode && <TouchableOpacity
                         style={styles.logoButton}
