@@ -39,7 +39,7 @@ const LandingScreen = ({ navigation }) => {
 
   const onAnimationFinish = () => {
     setSplashVisible(false);
-    navigation.navigate('MainScreen');
+    navigation.navigate('ListScreen');
   };
 
   if (!fontsLoaded) {

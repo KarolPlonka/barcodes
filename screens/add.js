@@ -10,6 +10,7 @@ import {
   Alert,
   Image,
 } from "react-native";
+import Checkbox from 'expo-checkbox';
 import { StyleSheet } from "react-native";
 
 // Import Expo BarCodeScanner and react-navigation hook
@@ -20,12 +21,9 @@ import LogoPicker from "../components/logoPicker";
 
 // Import custom components and functions
 import SplashScreen from "./splash";
-import ScrollPicker from "react-native-wheel-scrollview-picker";
-import {
-  validateBarcode,
-  barcodeTypes,
-  barcodeTypesMap,
-} from "./barcodesHandler";
+import { Picker } from '@react-native-picker/picker';
+
+import { barcodeTypes, findBarcodeTypeIndex } from "../utils/barcodesHandler";
 import { appendData, checkBarcode } from "../utils/utils";
 import { reducer, initialState } from "../utils/reducer";
 import { useFonts } from "expo-font";
@@ -41,11 +39,15 @@ export default function AddScreen() {
     'Coda-Latin-ExtraBold': require('../assets/fonts/coda-latin-ext-800-normal.ttf'),
   });
 
+
+
   const handleOnLayout = useCallback(async () => {
     if (fontsLoaded) {
       await SplashScreen.hideAsync();
     }
   }, [fontsLoaded]);
+
+
 
   const askForCameraPermission = () => {
     (async () => {
@@ -53,6 +55,8 @@ export default function AddScreen() {
       dispatch({ type: "SET_HAS_PERMISSION", payload: status === "granted" });
     })();
   };
+
+
 
   useEffect(() => {
     if (state.isBarcodeValid == null) {
@@ -64,6 +68,8 @@ export default function AddScreen() {
     }
   }, [state.isBarcodeValid]);
 
+
+
   useEffect(() => {
     askForCameraPermission();
   }, []);
@@ -71,17 +77,13 @@ export default function AddScreen() {
   const handleBarCodeScanned = ({ type, data }) => {
     dispatch({ type: "SET_SCANNED", payload: true });
     dispatch({ type: "SET_BARCODE_VALUE", payload: data });
+
     console.log("Type: " + type + "\t Barcode: " + data);
-    if (!barcodeTypesMap.has(type)) {
-      dispatch({ type: "SET_BORDER_COLOR", payload: "#FF0000" });
-    } else {
-      dispatch({ type: "SET_BORDER_COLOR", payload: "#00FF00" });
-      dispatch({
-        type: "SET_BARCODE_TYPE_INDEX",
-        payload: barcodeTypesMap.get(type),
-      });
-    }
+
+    handleBarcodeInput(data);
   };
+
+
 
   async function addBarcode(name, barcodeValue, barcodeTypeIndex, logo) {
     if (!name || !barcodeValue) {
@@ -98,15 +100,16 @@ export default function AddScreen() {
       await appendData({
         title: name,
         barcode: barcodeValue,
-        type: barcodeTypes[barcodeTypeIndex],
+        type: barcodeTypes[barcodeTypeIndex].name,
         logo: logo,
       });
-      navigation.navigate("MainScreen", { newBarcode: barcodeValue });
+      navigation.navigate("ListScreen", { newBarcode: barcodeValue });
       dispatch({ type: "SET_SPLASH_VISIBLE", payload: false });
     }, 5000);
   }
 
-  // Check permissions and return the actual screen
+
+
   if (state.hasPermission === null) {
     return (
       <View style={styles.container}>
@@ -114,6 +117,7 @@ export default function AddScreen() {
       </View>
     );
   }
+
   if (state.hasPermission === false) {
     return (
       <View style={styles.container}>
@@ -126,108 +130,132 @@ export default function AddScreen() {
     );
   }
 
-  const findType = (barcodeValue) => {
-    for (let i = 0; i < barcodeTypes.length; i++) {
-      if (validateBarcode(barcodeValue, i)) {
-        return i;
-      }
-    }
-    return null;
-  };
 
-  const handleTypeInput = (data, selectedIndex) => {
+  const handleTypeInput = (selectedIndex) => {
     dispatch({ type: "SET_BARCODE_TYPE_INDEX", payload: selectedIndex });
+
     if (state.barcodeValue === "") {
       dispatch({ type: "SET_IS_BARCODE_VALID", payload: null });
       return;
     }
-    if (validateBarcode(state.barcodeValue, selectedIndex)) {
+
+    if (barcodeTypes[selectedIndex].isValid(state.barcodeValue)) {
       dispatch({ type: "SET_IS_BARCODE_VALID", payload: true });
       return;
     }
+
     dispatch({ type: "SET_IS_BARCODE_VALID", payload: false });
   };
 
-  const handleBarcodeInput = (newType) => {
-    dispatch({ type: "SET_BARCODE_VALUE", payload: newType });
-    if (newType === "") {
+
+  const handleBarcodeInput = (newBarcodeValue) => {
+    dispatch({ type: "SET_BARCODE_VALUE", payload: newBarcodeValue });
+
+    if (newBarcodeValue === "") {
       dispatch({ type: "SET_IS_BARCODE_VALID", payload: null });
       return;
     }
-    let typeIndex = findType(newType);
-    if (typeIndex !== null) {
+
+    console.log("New barcode value: " + newBarcodeValue);
+
+    if(state.autoType){
+      const typeIndex = findBarcodeTypeIndex(newBarcodeValue);
+      if (typeIndex === null) {
+        dispatch({ type: "SET_IS_BARCODE_VALID", payload: false });
+        return;
+      }
+
       dispatch({ type: "SET_BARCODE_TYPE_INDEX", payload: typeIndex });
-      dispatch({ type: "SET_IS_BARCODE_VALID", payload: true });
-      return;
     }
-    dispatch({ type: "SET_IS_BARCODE_VALID", payload: false });
+    else{
+      if (!barcodeTypes[state.barcodeTypeIndex].isValid(newBarcodeValue)) {
+        dispatch({ type: "SET_IS_BARCODE_VALID", payload: false });
+        return;
+      }
+    }
+
+    dispatch({ type: "SET_IS_BARCODE_VALID", payload: true });
   };
 
-  const renderType = (data, index) => {
-    const textStyle = index === state.barcodeTypeIndex ? { fontSize: 30 } : {};
-    return (
-      <View>
-        <Text style={textStyle}>{data}</Text>
-      </View>
-    );
-  };
 
   const handleLogoPress = (logo) => {
     dispatch({ type: "SET_IS_LOGO_PICKER_VISBLE", payload: false });
     dispatch({ type: "SET_LOGO", payload: logo });
   }
 
+
   const handleNoLogoPress = () => {
     dispatch({ type: "SET_IS_LOGO_PICKER_VISBLE", payload: false });
     dispatch({ type: "SET_LOGO", payload: null });
-  } 
+  }
+
+
+
+
+
 
   return (
     <View style={styles.container} onLayout={handleOnLayout}>
+
       <View style={[styles.barcodebox, { borderColor: state.borderColor }]}>
         <BarCodeScanner
           onBarCodeScanned={state.scanned ? undefined : handleBarCodeScanned}
           style={{ height: 400, width: 400 }}
         />
       </View>
+
       {state.scanned && (
         <TouchableOpacity
-          style={styles.button}
+          style={styles.buttonLogo}
           onPress={() => {
             dispatch({ type: "SET_SCANNED", payload: false });
             dispatch({ type: "SET_BORDER_COLOR", payload: "#CCCCCC" });
             dispatch({ type: "SET_BARCODE_VALUE", payload: "" });
-            dispatch({ type: "SET_BARCODE_TYPE_INDEX", payload: null });
+            dispatch({ type: "SET_BARCODE_TYPE_INDEX", payload: 0 });
+            dispatch({ type: "SET_IS_BARCODE_VALID", payload: null });
           }}
         >
           <Text style={styles.text}>Kliknij, aby zeskanować ponownie</Text>
         </TouchableOpacity>
       )}
-      <View style={styles.typePicker}>
-        <ScrollPicker
-          dataSource={barcodeTypes}
-          selectedIndex={state.barcodeTypeIndex}
-          renderItem={renderType}
+
+      <View style={styles.typePickerWrapper}>
+        <Text style={styles.legend}>type</Text>
+        <Picker
+          style={styles.typePicker}
+          selectedValue={state.barcodeTypeIndex}
           onValueChange={handleTypeInput}
-          wrapperHeight={180}
-          wrapperWidth={150}
-          wrapperColor="#FFFFFF"
-          itemHeight={60}
-          highlightColor="#d8d8d8"
-          highlightBorderWidth={2}
-        />
+          mode='dropdown'
+        >
+          {barcodeTypes.map((type, index) => {
+            return <Picker.Item key={index} label={type.name} value={index} />
+          })}
+        </Picker>
+
+        <View style={styles.checkboxWrapper}>
+          <Checkbox
+            style={styles.checkbox}
+            color={"#1C3A77"}
+            value={state.autoType}
+            onValueChange={() => {
+              dispatch({ type: "SET_AUTO_TYPE", payload: !state.autoType });
+              dispatch({ type: "SET_IS_BARCODE_VALID", payload: null });
+            }}
+          />
+          <Text>Auto</Text>
+        </View>
       </View>
 
       <View style={styles.logoRow}>
-        {state.logo !== null && <Image source={state.logo.uri} style={styles.logo} />}
+        {state.logo && <Image source={state.logo.source} style={styles.logo} />}
 
         <TouchableOpacity
-          style={styles.button}
+          style={styles.buttonLogo}
           onPress={() => {
             dispatch({ type: "SET_IS_LOGO_PICKER_VISBLE", payload: true });
           }}
         >
-          <Text>Select Logo</Text>
+          <Text style={styles.text} >Select Logo</Text>
         </TouchableOpacity>
       </View>
 
@@ -247,6 +275,7 @@ export default function AddScreen() {
         placeholder="barcode"
         placeholderTextColor="#9E9E9E"
       />
+
       <TextInput
         style={[styles.input, { borderColor: "#CCCCCC" }]}
         value={state.name}
@@ -254,7 +283,7 @@ export default function AddScreen() {
         placeholder="name"
         placeholderTextColor="#9E9E9E"
       />
-      {state.splashVisible && <SplashScreen />}
+
       <Pressable
         style={styles.pressable}
         onPress={() =>
@@ -262,83 +291,110 @@ export default function AddScreen() {
         }>
         <Text style={styles.text}>Dodaj</Text>
       </Pressable>
+
+      {state.splashVisible && <SplashScreen />}
+
     </View>
   );
 }
 
 
 const styles = StyleSheet.create({
-    typePicker: {
-        height: 150,
-        width: "80%",
-        padding: 10,
-    },
-    container: {
-        flex: 1,
-        backgroundColor: "#FFFFFF",
-        alignItems: "center",
-        justifyContent: "center",
-        flexDirection: "column",
-    },
-    input: {
-        height: 40,
-        marginTop: 10,
-        borderWidth: 1,
-        marginHorizontal: 10,
-        padding: 10,
-        width: "80%",
-        borderRadius: 4,
-        backgroundColor: "#D6D9E0",
-        color: "#333333",
-        fontFamily: "Coda-Latin",
-    },
-    barcodebox: {
-        alignItems: "center",
-        justifyContent: "center",
-        width: "80%",
-        height: "35%",
-        overflow: "hidden",
-        borderRadius: 50, //Changed from 4 to 50
-        backgroundColor: "#1C3A77",
-        marginBottom: 20,
-        borderWidth: 2,
-        borderColor: "#D6D9E0",
-    },
-    button: {
-        alignItems: "center",
-        justifyContent: "center",
-        margin: 10,
-        padding: 10,
-        borderRadius: 4,
-        backgroundColor: "#FF6B6C",
-    },
-    pressable: {
-        backgroundColor: "#1C3A77",
-        paddingHorizontal: 50,
-        paddingVertical: 10,
-        borderRadius: 50, //Changed from 4 to 50
-        margin: 10,
-        borderColor: "#D6D9E0",
-        borderWidth: 2,
-    },
-    text: {
-        color: "#FFFFFF",
-        fontWeight: "bold",
-        fontSize: 16,
-        fontFamily: "Coda-Latin",
-        textAlign: "center",
-        alignSelf: "flex-start", //Added to experiment with unusual text alignments
-    },
-    logo: {
-      resizeMode: 'contain',
-      height: 60,
-      width: 200,
-    },
-    logoRow: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      justifyContent: 'center',
-      padding: 10,
-    }
+  container: {
+    flex: 1,
+    backgroundColor: "#FFFFFF",
+    alignItems: "center",
+    justifyContent: "center",
+    flexDirection: "column",
+  },
+  typePickerWrapper: {
+    width: "80%",
+    borderColor: "#1C3A77",
+    borderWidth: 3,
+    flexDirection: "row",
+    margin: 10,
+  },
+  typePicker: {
+    flex: 4,
+  },
+  legend: {
+    position: 'absolute',
+    top: -15,
+    left: 10,
+    backgroundColor: '#FFFFFF',
+    padding: 5,
+    color: "#1C3A77",
+    fontFamily: "Coda-Latin",
+  },
+  checkboxWrapper: {
+    alignItems: "center",
+    justifyContent: "center",
+    flex: 1,
+  },
+  checkbox: {
+    marginBottom: 5,
+    backgroundColor: "#1C3A77",
+  },
+  input: {
+    height: 40,
+    marginTop: 10,
+    borderWidth: 1,
+    marginHorizontal: 10,
+    padding: 10,
+    width: "80%",
+    borderRadius: 4,
+    backgroundColor: "#D6D9E0",
+    color: "#333333",
+    fontFamily: "Coda-Latin",
+  },
+  barcodebox: {
+    alignItems: "center",
+    justifyContent: "center",
+    width: "80%",
+    height: "35%",
+    overflow: "hidden",
+    borderRadius: 50, //Changed from 4 to 50
+    backgroundColor: "#1C3A77",
+    marginBottom: 20,
+    borderWidth: 2,
+    borderColor: "#D6D9E0",
+  },
+  buttonLogo: {
+    alignItems: "center",
+    justifyContent: "center",
+    margin: 10,
+    padding: 12,
+    borderRadius: 4,    
+    backgroundColor: "#1C3A77",
+  },
+  pressable: {
+    backgroundColor: "#1C3A77",
+    paddingHorizontal: 50,
+    paddingVertical: 10,
+    borderRadius: 50, //Changed from 4 to 50
+    margin: 10,
+    borderColor: "#D6D9E0",
+    borderWidth: 2,
+  },
+  text: {
+    color: "#FFFFFF",
+    fontWeight: "bold",
+    fontSize: 16,
+    fontFamily: "Coda-Latin",
+    textAlign: "center",
+    alignSelf: "flex-start", //Added to experiment with unusual text alignments
+  },
+  logo: {
+    resizeMode: 'contain',
+    height: 80,
+    width: 80,
+  },
+  logoRow: {
+    display: 'flex',
+    flexDirection: 'row',
+    width: '80%',
+    padding: 10,
+    justifyContent: 'space-evenly',
+  }
 });
 

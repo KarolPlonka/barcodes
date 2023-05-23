@@ -3,12 +3,13 @@ export const initialState = {
     scanned: false,
     name: "",
     barcodeValue: "",
-    barcodeTypeIndex: null,
+    barcodeTypeIndex: 0,
     borderColor: "#CCCCCC",
     splashVisible: false,
     isBarcodeValid: null,
     isLogoPickerVisible: false,
     logo: null,
+    autoType: true,
   };
   
 export function reducer(state, action) {
@@ -33,6 +34,8 @@ export function reducer(state, action) {
         return { ...state, isLogoPickerVisible: action.payload };
       case 'SET_LOGO':
         return { ...state, logo: action.payload };
+      case 'SET_AUTO_TYPE':
+        return { ...state, autoType: action.payload };
       default:
         throw new Error('Invalid action type');
     }

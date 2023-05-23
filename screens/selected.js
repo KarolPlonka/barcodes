@@ -104,10 +104,10 @@ export default function SelectedScreen({ route }) {
 
     return (
         <SafeAreaView style={styles.container} onLayout={handleOnLayout} >
-            <View style={styles.singleItem}>
                 <View style={styles.titleWrapper}>
                     {editMode ? (
                         <TextInput
+                            multiline={true}
                             ref={titleRef}
                             style={[styles.title, { textAlign: "center", padding: 5, borderBottomWidth: 2, borderBottomColor: "#FF6B6C" }]}
                             value={newBarcodeTitle}
@@ -118,7 +118,24 @@ export default function SelectedScreen({ route }) {
                             {selectedBarcode.title}
                         </Text>
                     )}
+
+                    <View style={styles.logoWrapper}>
+                        {newBarcodeLogo && <Image source={newBarcodeLogo.source} style={styles.logo} />}
+                        
+                        {editMode && !newBarcodeLogo && <View style={styles.logo}/>}
+
+                        {editMode && <TouchableOpacity
+                            style={styles.logoButton}
+                            onPress={() => { setIsLogoPickerVisible(true) }}
+                        >
+                            <Feather name="image" size={45} color="white" />
+                        </TouchableOpacity>}
+
+                    </View>
+
                 </View>
+
+
                 <View style={[styles.barcodeWrapper, { borderColor: "#1C3A77", borderWidth: 2 }]}>
                     <Barcode
                         format={selectedBarcode.type}
@@ -131,25 +148,6 @@ export default function SelectedScreen({ route }) {
                         color={"white"}
                     />
                 </View>
-                
-                
-                <View style={styles.logoRow}>
-                    {newBarcodeLogo && <Image source={newBarcodeLogo.source} style={styles.logo} />}
-
-                    {editMode && <TouchableOpacity
-                        style={styles.logoButton}
-                        onPress={() => {setIsLogoPickerVisible(true)}}
-                    >
-                        <Text>Select Logo</Text>
-                    </TouchableOpacity>}
-                </View>
-
-                <LogoPicker
-                    visible={isLogoPickerVisible}
-                    onLogoPress={handleLogoPick}
-                    onNoLogoPress={handleNoLogoPress}
-                    backAction={() => {setIsLogoPickerVisible(false)}}
-                />
         
                 <TouchableOpacity
                     onPress={() => { deleteBarcode(selectedBarcode, navigation) }}
@@ -178,37 +176,44 @@ export default function SelectedScreen({ route }) {
                         <Feather name="edit" size={30} color="white" />
                     </TouchableOpacity>
                 )}
+
+                {!editMode &&
                 <TouchableOpacity
                     onPress={() => { setMaxBrightness() }}
                     style={[styles.brightnessButton, { backgroundColor: "#1C3A77", borderRadius: 50, width: 50, height: 50, alignItems: "center", justifyContent: "center" }]}
                 >
                     <Feather name="sun" size={30} color="white" />
-                </TouchableOpacity>
+                </TouchableOpacity>}
+
+                {!editMode &&
                 <TouchableOpacity
                     onPress={() => navigation.goBack()}
                     style={[styles.comeBackButton, { backgroundColor: "#1C3A77", borderRadius: 50, width: 50, height: 50, alignItems: "center", justifyContent: "center" }]}
                 >
                     <MaterialIcons name="arrow-back" size={30} color="white" />
-                </TouchableOpacity>
-            </View>
+                </TouchableOpacity>}
+
+                
+                <LogoPicker
+                    visible={isLogoPickerVisible}
+                    onLogoPress={handleLogoPick}
+                    onNoLogoPress={handleNoLogoPress}
+                    backAction={() => {setIsLogoPickerVisible(false)}}
+                />
+
+
         </SafeAreaView>
     );
 }
 
 const styles = StyleSheet.create({
-    singleItem: {
-        flex: 1,
-        justifyContent: 'center',
-        height: 500,
-        padding: 5,
-        margin: 5,
-    },
     container: {
         flex: 1,
         backgroundColor: "#D6D9E0",
         marginTop: StatusBar.currentHeight || 0,
         borderRadius: 10,
         paddingHorizontal: 20,
+        justifyContent: 'center',
     },
     title: {
         color: "#1C3A77",
@@ -216,6 +221,8 @@ const styles = StyleSheet.create({
         fontWeight: "bold",
         fontFamily: "Coda-Latin-Bold",
         marginBottom: 10,
+        flexWrap: "wrap",
+        flexShrink: 1,
     },
     deleteButton: {
         position: "absolute",
@@ -243,9 +250,14 @@ const styles = StyleSheet.create({
         right: 20,
     },
     titleWrapper: {
+        flexDirection: "row",
+        justifyContent: "space-between",
+        alignItems: "center",
         marginBottom: 10,
-    },
+      },
     barcodeWrapper: {
+        padding: 15,
+        backgroundColor: "white",
         marginBottom: 10,
         alignSelf: "center",
         justifyContent: "center",
@@ -263,18 +275,20 @@ const styles = StyleSheet.create({
       width: 100,
     },
     logoButton: {
-        alignItems: "center",
-        justifyContent: "center",
-        margin: 10,
-        padding: 10,
-        borderRadius: 4,
-        backgroundColor: "#FF6B6C",
+        position: "absolute",
+        top: 0,
+        left: 0,
+        bottom: 0,
+        right: 0,
+        justifyContent: 'center',
+        alignItems: 'center',
+        backgroundColor: 'rgba(0, 0, 0, 0.4)',
+        borderWidth: 3,
+        borderRadius: 10,
+        borderColor: '#555',
     },
-    logoRow: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      justifyContent: 'center',
-      padding: 10,
-      marginRight: 'auto',
+    logoWrapper: {
+        padding: 5,
+        marginLeft: 20,
     }
 });

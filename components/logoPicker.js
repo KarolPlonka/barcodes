@@ -16,6 +16,8 @@ import { Feather } from '@expo/vector-icons';
 import { logos } from '../assets/logos';
 import { getLogos, getImageData } from '../utils/utils';
 import { getImagePalette } from '../utils/imagePaletteExctractor';
+import { manipulateAsync } from 'expo-image-manipulator';
+
 
 export default LogoPicker = ({ visible, onLogoPress, onNoLogoPress, backAction }) => {
     const [uploadedLogos, setUploadedLogos] = useState([]);
@@ -78,9 +80,7 @@ export default LogoPicker = ({ visible, onLogoPress, onNoLogoPress, backAction }
                     onPress={() => onLogoDeletePress(item)}
                     style={styles.deleteLogoBtn}
                 > 
-                    <Text>
-                        <Feather name="x-circle" size={20} color="red"/>
-                    </Text>
+                    <Feather name="x-circle" size={20} color="red"/>
                 </TouchableOpacity>}
 
                 <Image source={item.source} style={styles.logo} resizeMode={"contain"} />
@@ -125,19 +125,13 @@ function ImagePicker( {setUploadedLogos } ) {
             allowsEditing: true,
             aspect: [1, 1],
             quality: 0,
+            // base64: true,
         });
+
+        console.log(result.assets[0].uri);
 
         if (!result.canceled) {
             const imageUri = result.assets[0].uri;
-
-            // try{
-            //     // const imageData = await getImageData(imageUri);
-            //     // const palette = getImagePalette(imageData);
-            //     // console.log(palette);
-            // }
-            // catch(e){
-            //     console.log(e);
-            // }
 
             let uploadedLogos = await getLogos();
             const len = uploadedLogos ? uploadedLogos.length : 0;
@@ -163,7 +157,6 @@ function ImagePicker( {setUploadedLogos } ) {
     return (
         <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
             <Button title="Add logo" onPress={pickImage} />
-
         </View>
     );
 }

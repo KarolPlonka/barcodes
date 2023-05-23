@@ -22,8 +22,8 @@ export function getImagePalette(imgData, acceleration = 1, colorsAmount = 3) {
     
     const totalPixels = imgData.length / 4 * acceleration;
 
-    for (let i = 0; i < imgData.length; i += 4 * acceleration) {
-        if (imgData[i + 3] === 0) continue; //skip transparent pixels
+    for (let i = 0; i < imgData.length; i += 3 * acceleration) {
+        // if (imgData[i + 3] === 0) continue; //skip transparent pixels
 
         const [r, g, b] = imgData.slice(i, i + 3);
 
@@ -49,6 +49,7 @@ export function getImagePalette(imgData, acceleration = 1, colorsAmount = 3) {
             b: (closestColor.b * closestColor.count + b) / (closestColor.count + 1),
             count: closestColor.count + 1,
         }
+
     }
 
     baseColors = baseColors.map((color) => {

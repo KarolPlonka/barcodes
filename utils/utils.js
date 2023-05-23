@@ -1,7 +1,7 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Alert } from "react-native";
 import * as Font from 'expo-font';
-import {logos} from '../assets/logos'
+import { logos } from '../assets/logos'
 import { manipulateAsync, getImageInfoAsync } from 'expo-image-manipulator';
 
 
@@ -114,35 +114,35 @@ export const getData = async () => {
 
 export const deleteBarcode = (barcode, navigation) => {
   Alert.alert(
-      "Usuń kartę",
-      "Czy jesteś pewny/a, że chcesz usunąć tę kartę?",
-      [
-          {
-              text: "Wyjdź",
-              onPress: () => console.log("Wyjście..."),
-              style: "cancel",
-          },
-          {
-              text: "Usuń",
-              onPress: async () => {
-                  try {
-                      const barcodes = await getData();
-                      const updatedBarcodes = barcodes.filter(
-                          (item) => item.barcode !== barcode.barcode
-                      );
-                      await AsyncStorage.setItem(
-                          "barcodes",
-                          JSON.stringify(updatedBarcodes)
-                      );
-                      //setBARCODES(updatedBarcodes);
-                  } catch (e) {
-                      console.log(e);
-                  }
-                  navigation.navigate("MainScreen", { deleted: true });
-              },
-              style: "destructive",
-          },
-      ]
+    "Usuń kartę",
+    "Czy jesteś pewny/a, że chcesz usunąć tę kartę?",
+    [
+      {
+        text: "Wyjdź",
+        onPress: () => console.log("Wyjście..."),
+        style: "cancel",
+      },
+      {
+        text: "Usuń",
+        onPress: async () => {
+          try {
+            const barcodes = await getData();
+            const updatedBarcodes = barcodes.filter(
+              (item) => item.barcode !== barcode.barcode
+            );
+            await AsyncStorage.setItem(
+              "barcodes",
+              JSON.stringify(updatedBarcodes)
+            );
+            //setBARCODES(updatedBarcodes);
+          } catch (e) {
+            console.log(e);
+          }
+          navigation.navigate("ListScreen", { deleted: true });
+        },
+        style: "destructive",
+      },
+    ]
   );
 };
 
@@ -168,18 +168,5 @@ export const loadFonts = async () => {
 };
 
 
-export async function getImageData(juri) {
 
-  const { base64 } = await manipulateAsync(
-    {uri: juri},
-    [{ resize: { width: 300, height: 300 } }],
-    { format: 'png' }
-  );
 
-  // const response = await fetch(`data:image/jpeg;base64,${base64}`);
-  // const arrayBuffer = await response.arrayBuffer();
-  const imageData = new Uint8ClampedArray(base64);
-  console.log(base64);
-
-  return imageData ;
-}

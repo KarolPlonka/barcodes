@@ -30,6 +30,7 @@ const Item = React.memo(({ item, drag, onPress }) => {
       <TouchableOpacity onPress={onPress} onLongPress={drag} style={styles.item}>
         <View style={styles.titleWrapper}>
           <Text style={styles.title}>{item.title}</Text>
+          {item.logo && <Image source={item.logo.source} style={styles.logo} />}
         </View>
 
         <View style={styles.barcodeWrapper}>
@@ -41,9 +42,6 @@ const Item = React.memo(({ item, drag, onPress }) => {
             background={"white"}
             color={"white"}
           />
-        </View>
-        <View style={styles.logoWrapper}>
-          {item.logo && <Image source={item.logo.source} style={styles.logo} />}
         </View>
       </TouchableOpacity>
     </ScaleDecorator>
@@ -59,7 +57,7 @@ const handleDragDrop = (data, setBARCODES) => {
   setBARCODES(data);
 };
 
-const MainScreen = ({ navigation }) => {
+const ListScreen = ({ navigation }) => {
   const [BARCODES, setBARCODES] = useState([]);
   const [splashVisible, setSplashVisible] = useState(false);
   const isFocused = useIsFocused();
@@ -118,18 +116,22 @@ const MainScreen = ({ navigation }) => {
   const refreshPage = () => {
     setSplashVisible(true);
     setTimeout(() => {
-      navigation.navigate("MainScreen");
+      navigation.navigate("ListScreen");
       setSplashVisible(false);
     }, 5000); // Adjust this time based on your splash screen animation duration
   };
 
   return (
     <SafeAreaView style={styles.container} onLayout={handleOnLayout}>
+
       {splashVisible && <SplashScreenTest /> }
+
       <View style={{ flex: 1, marginBottom: 10 }}>
+
         <TouchableOpacity onPress={refreshPage} style={{ alignSelf: "center", marginVertical: 5 }}>
           <Feather name="refresh-ccw" size={24} color="black" />
         </TouchableOpacity>
+
         <GestureHandlerRootView style={{ flex: 1 }} >
           <DraggableFlatList
             data={BARCODES}
@@ -138,7 +140,9 @@ const MainScreen = ({ navigation }) => {
             onDragEnd={({ data }) => handleDragDrop(data, setBARCODES)}
           />
         </GestureHandlerRootView>
+
       </View>
+
       <View style={styles.addButtonWrapper}>
         <TouchableOpacity
           style={styles.addButton}
@@ -147,6 +151,7 @@ const MainScreen = ({ navigation }) => {
           <Text style={styles.addButtonText}>+</Text>
         </TouchableOpacity>
       </View>
+
     </SafeAreaView>
   );
 };
@@ -202,6 +207,8 @@ const styles = StyleSheet.create({
     fontSize: 24,
     fontWeight: "bold",
     fontFamily: "Coda-Latin-Bold",
+    flexWrap: "wrap",
+    flexShrink: 1,
   },
   addButton: {
     width: 60,
@@ -252,4 +259,4 @@ const styles = StyleSheet.create({
 });
 
 
-export default MainScreen;
+export default ListScreen;
