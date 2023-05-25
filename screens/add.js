@@ -191,22 +191,23 @@ export default function AddScreen() {
           onBarCodeScanned={state.scanned ? undefined : handleBarCodeScanned}
           style={{ height: 400, width: 400 }}
         />
-      </View>
 
-      {state.scanned && (
-        <TouchableOpacity
-          style={styles.buttonLogo}
-          onPress={() => {
-            dispatch({ type: "SET_SCANNED", payload: false });
-            dispatch({ type: "SET_BORDER_COLOR", payload: "#CCCCCC" });
-            dispatch({ type: "SET_BARCODE_VALUE", payload: "" });
-            dispatch({ type: "SET_BARCODE_TYPE_INDEX", payload: 0 });
-            dispatch({ type: "SET_IS_BARCODE_VALID", payload: null });
-          }}
-        >
-          <Text style={styles.text}>Kliknij, aby zeskanować ponownie</Text>
-        </TouchableOpacity>
-      )}
+        {state.scanned && <View style={styles.barcodeBoxOverlay}>
+          <TouchableOpacity
+            style={styles.buttonScanAgain}
+            onPress={() => {
+              dispatch({ type: "SET_SCANNED", payload: false });
+              dispatch({ type: "SET_BORDER_COLOR", payload: "#CCCCCC" });
+              dispatch({ type: "SET_BARCODE_VALUE", payload: "" });
+              dispatch({ type: "SET_BARCODE_TYPE_INDEX", payload: 0 });
+              dispatch({ type: "SET_IS_BARCODE_VALID", payload: null });
+            }}
+          >
+            <Text style={styles.text}>Kliknij, aby zeskanować ponownie</Text>
+          </TouchableOpacity>
+        </View>}
+      
+      </View>
 
       <View style={styles.typePickerWrapper}>
         <Text style={styles.legend}>type</Text>
@@ -296,6 +297,20 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     flexDirection: "column",
     padding: 5, // Added padding for better visibility on smaller devices
+  },
+  barcodeBoxOverlay: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    bottom: 0,
+    right: 0,
+    backgroundColor: "#1C3A77",
+    opacity: 0.9,
+  },
+  buttonScanAgain: {
+    flex: 1,
+    alignItems: "center",
+    justifyContent: "center",
   },
   typePickerWrapper: {
     width: "80%",

@@ -1,13 +1,13 @@
 // React and React Native modules
 import React, { useState, useEffect, useCallback } from "react";
 import {
-  SafeAreaView,
   Text,
   TouchableOpacity,
   Dimensions,
   View,
   Image,
 } from "react-native";
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 // Navigation modules
 import { useIsFocused } from '@react-navigation/native';
@@ -142,9 +142,9 @@ const ListScreen = ({ navigation }) => {
 
       <View style={{ flex: 1, marginBottom: 10 }}>
 
-        <TouchableOpacity onPress={refreshPage} style={{ alignSelf: "center", marginVertical: 5 }}>
+        {/* <TouchableOpacity onPress={refreshPage} style={{ alignSelf: "center", marginVertical: 5 }}>
           <Feather name="refresh-ccw" size={24} color="black" />
-        </TouchableOpacity>
+        </TouchableOpacity> */}
 
         <GestureHandlerRootView style={{ flex: 1 }} >
           <DraggableFlatList
@@ -162,7 +162,7 @@ const ListScreen = ({ navigation }) => {
           style={styles.addButton}
           onPress={() => navigation.navigate("AddScreen")}
         >
-          <Text style={styles.addButtonText}>+</Text>
+          <Feather name="plus" size={46} color="white" />
         </TouchableOpacity>
       </View>
 
@@ -241,11 +241,6 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.25,
     shadowRadius: 3.84,
     elevation: 5,
-  },
-  addButtonText: {
-    color: "white",
-    fontSize: 36,
-    fontWeight: "bold",
   },
   titleWrapper: {
     flexDirection: "row",
