@@ -147,12 +147,20 @@ const ListScreen = ({ navigation }) => {
         </TouchableOpacity> */}
 
         <GestureHandlerRootView style={{ flex: 1 }} >
+
           <DraggableFlatList
             data={BARCODES}
             renderItem={renderItem}
             keyExtractor={(item) => `draggable-item-${item.barcode}`}
             onDragEnd={({ data }) => handleDragDrop(data, setBARCODES)}
           />
+
+          <LinearGradient
+            colors={['#D6D9E0', 'transparent','transparent', '#D6D9E0']}
+            locations={[0.001, 0.01, 0.99, 0.999]}
+            style={styles.fader}
+          />
+
         </GestureHandlerRootView>
 
       </View>
@@ -165,7 +173,7 @@ const ListScreen = ({ navigation }) => {
           <Feather name="plus" size={46} color="white" />
         </TouchableOpacity>
       </View>
-
+      
     </SafeAreaView>
   );
 };
@@ -179,6 +187,14 @@ const styles = StyleSheet.create({
     backgroundColor: "#D6D9E0",
     marginTop: StatusBar.currentHeight || 0,
     fontFamily: "Coda-Latin-Bold",
+  },
+  fader: {
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    top: 0,
+    bottom: 0,
+    pointerEvents: 'none',
   },
   typePicker: {
     height: 150,
