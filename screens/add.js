@@ -47,16 +47,12 @@ export default function AddScreen() {
     }
   }, [fontsLoaded]);
 
-
-
   const askForCameraPermission = () => {
     (async () => {
       const { status } = await BarCodeScanner.requestPermissionsAsync();
       dispatch({ type: "SET_HAS_PERMISSION", payload: status === "granted" });
     })();
   };
-
-
 
   useEffect(() => {
     if (state.isBarcodeValid == null) {
@@ -82,8 +78,6 @@ export default function AddScreen() {
 
     handleBarcodeInput(data);
   };
-
-
 
   async function addBarcode(name, barcodeValue, barcodeTypeIndex, logo) {
     if (!name || !barcodeValue) {
@@ -188,11 +182,6 @@ export default function AddScreen() {
     dispatch({ type: "SET_IS_LOGO_PICKER_VISBLE", payload: false });
     dispatch({ type: "SET_LOGO", payload: null });
   }
-
-
-
-
-
 
   return (
     <View style={styles.container} onLayout={handleOnLayout}>
@@ -306,6 +295,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     flexDirection: "column",
+    padding: 5, // Added padding for better visibility on smaller devices
   },
   typePickerWrapper: {
     width: "80%",
@@ -350,20 +340,21 @@ const styles = StyleSheet.create({
   barcodebox: {
     alignItems: "center",
     justifyContent: "center",
-    width: "80%",
-    height: "35%",
+    width: "70%", // Adjusted width to 100% to better fit smaller devices
+    height: 220, // Adjusted height for smaller devices
     overflow: "hidden",
-    borderRadius: 50, //Changed from 4 to 50
+    borderRadius: 50, 
     backgroundColor: "#1C3A77",
-    marginBottom: 20,
+    marginBottom: 10,
     borderWidth: 2,
     borderColor: "#D6D9E0",
+    marginTop: 30,
   },
   buttonLogo: {
     alignItems: "center",
     justifyContent: "center",
+    padding: 10,
     margin: 10,
-    padding: 12,
     borderRadius: 4,    
     backgroundColor: "#1C3A77",
   },
@@ -371,18 +362,18 @@ const styles = StyleSheet.create({
     backgroundColor: "#1C3A77",
     paddingHorizontal: 50,
     paddingVertical: 10,
-    borderRadius: 50, //Changed from 4 to 50
-    margin: 10,
+    borderRadius: 50,
+    margin: 15,
     borderColor: "#D6D9E0",
     borderWidth: 2,
   },
   text: {
     color: "#FFFFFF",
     fontWeight: "bold",
-    fontSize: 16,
+    fontSize: 14, // Adjusted font size for smaller devices
     fontFamily: "Coda-Latin",
     textAlign: "center",
-    alignSelf: "flex-start", //Added to experiment with unusual text alignments
+    alignSelf: "center", // Adjusted to align text at the center
   },
   logo: {
     resizeMode: 'contain',

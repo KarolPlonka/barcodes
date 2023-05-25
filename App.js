@@ -56,6 +56,7 @@ export default function App() {
           options={{
             stackAnimation: "slide_from_bottom",
             stackPresentation: "modal",
+            headerShown: false,
           }}
         />
         <Stack.Screen
