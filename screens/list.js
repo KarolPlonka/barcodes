@@ -31,34 +31,39 @@ const Item = React.memo(({ item, drag, onPress }) => {
 
   return (
     <ScaleDecorator>
-      <LinearGradient
-        colors={gradiedntColors}
-        start={[0, 0]}
-        end={[1, 1]}
-        style={styles.linearGradient}
-      >
-        <TouchableOpacity onPress={onPress} onLongPress={drag} style={styles.item}>
+      <TouchableOpacity onPress={onPress} onLongPress={drag}>
+        <LinearGradient
+          colors={gradiedntColors}
+          start={[0, 0]}
+          end={[1, 1]}
+          style={styles.item}
+        >
           <View style={styles.titleWrapper}>
             
-            <Text style={[styles.title, {color: gradiedntColors[0]}]}>
+            <Text style={styles.title}>
               {item.title}
             </Text>
 
-            {item.logo && <Image source={item.logo.source} style={styles.logo} />}
+            {item.logo && <View style={styles.logoWrapper}>
+              <Image source={item.logo.source} style={styles.logo} />
+            </View>}
+
           </View>
 
           <View style={styles.barcodeWrapper}>
             <Barcode
               format={item.type}
+              width={4}
               value={item.barcode}
               text={item.barcode}
               maxWidth={Dimensions.get("window").width - 100}
               background={"white"}
               color={"white"}
+              style={styles.barcode}
             />
           </View>
-        </TouchableOpacity>
-      </LinearGradient>
+        </LinearGradient>
+      </TouchableOpacity>
     </ScaleDecorator>
   );
 });
@@ -213,11 +218,11 @@ const styles = StyleSheet.create({
     borderWidth: 2,
     borderColor: "#D6D9E0",
   },
-  linearGradient: {
+  item: {
     padding: 20,
     marginVertical: 10,
     marginHorizontal: 18,
-    borderRadius: 15,
+    borderRadius: 20,
     shadowColor: "#000",
     shadowOffset: {
       width: 0,
@@ -229,18 +234,21 @@ const styles = StyleSheet.create({
     fontFamily: "Actor",
     minHeight: 200,
   },
-  item: {
-    backgroundColor: "white",
-    borderRadius: 5,
+  barcode: {
     padding: 5,
+    paddingTop: 15,
   },
   title: {
-    color: "#1C3A77",
+    color: "white",
     fontSize: 24,
     fontWeight: "bold",
     fontFamily: "Coda-Latin-Bold",
     flexWrap: "wrap",
     flexShrink: 1,
+    borderRadius: 3,
+    backgroundColor: "white",
+    backgroundColor: "rgba(0,0,0,0.4)",
+    padding: 5,
   },
   addButton: {
     width: 60,
@@ -277,6 +285,9 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     marginTop: 0,
+    backgroundColor: "rgba(0,0,0,0.4)",
+    padding: 5,
+    borderRadius: 5,
   },
   logo: {
     resizeMode: 'contain',
