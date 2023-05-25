@@ -3,6 +3,7 @@ import { Alert } from "react-native";
 import * as Font from 'expo-font';
 import { logos } from '../assets/logos'
 import { manipulateAsync, getImageInfoAsync } from 'expo-image-manipulator';
+import { log } from "react-native-reanimated";
 
 
 export const updateBarcode = async (selectedBarcode, updatedBarcode) => {
@@ -38,30 +39,31 @@ const testBARCODES = [
     title: 'LIDL',
     barcode: '223456789123',
     type: 'EAN13',
-    logo: null,
+    logo: logos[2],
   },
   {
     title: 'TESCO',
     barcode: '443456789123',
     type: 'EAN13',
-    logo: null,
+    logo: logos[3],
   },
   {
     title: 'TESTCO',
     barcode: '553456789123',
     type: 'EAN13',
-    logo: null,
+    logo: logos[4],
   },
   {
     title: 'SHEESH',
     barcode: '663456789123',
     type: 'EAN13',
-    logo: null,
+    logo: logos[5],
   },
 ];
 
 export const storeData = async () => {
   try {
+    // await AsyncStorage.clear(); //refresh
     const data = await AsyncStorage.getItem('barcodes');
     if (!data || data.length === 0) {
       await AsyncStorage.setItem('barcodes', JSON.stringify(testBARCODES))

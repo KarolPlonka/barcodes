@@ -19,31 +19,46 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Feather } from '@expo/vector-icons';
 import { useFonts } from "expo-font";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
+import { LinearGradient } from 'expo-linear-gradient';
+
 
 // Local modules
 import * as SplashScreen from 'expo-splash-screen';
 import SplashScreenTest from "./splash";
 
 const Item = React.memo(({ item, drag, onPress }) => {
+  const gradiedntColors = item.logo && item.logo.colors ? item.logo.colors : ["#000000", "#888", "#000000"];
+
   return (
     <ScaleDecorator>
-      <TouchableOpacity onPress={onPress} onLongPress={drag} style={styles.item}>
-        <View style={styles.titleWrapper}>
-          <Text style={styles.title}>{item.title}</Text>
-          {item.logo && <Image source={item.logo.source} style={styles.logo} />}
-        </View>
+      <LinearGradient
+        colors={gradiedntColors}
+        start={[0, 0]}
+        end={[1, 1]}
+        style={styles.linearGradient}
+      >
+        <TouchableOpacity onPress={onPress} onLongPress={drag} style={styles.item}>
+          <View style={styles.titleWrapper}>
+            
+            <Text style={[styles.title, {color: gradiedntColors[0]}]}>
+              {item.title}
+            </Text>
 
-        <View style={styles.barcodeWrapper}>
-          <Barcode
-            format={item.type}
-            value={item.barcode}
-            text={item.barcode}
-            maxWidth={Dimensions.get("window").width - 100}
-            background={"white"}
-            color={"white"}
-          />
-        </View>
-      </TouchableOpacity>
+            {item.logo && <Image source={item.logo.source} style={styles.logo} />}
+          </View>
+
+          <View style={styles.barcodeWrapper}>
+            <Barcode
+              format={item.type}
+              value={item.barcode}
+              text={item.barcode}
+              maxWidth={Dimensions.get("window").width - 100}
+              background={"white"}
+              color={"white"}
+            />
+          </View>
+        </TouchableOpacity>
+      </LinearGradient>
     </ScaleDecorator>
   );
 });
@@ -101,7 +116,6 @@ const ListScreen = ({ navigation }) => {
       <Item
         item={item}
         drag={drag}
-        styles={styles}
         onPress={() => {
           navigation.navigate("SelectedScreen", { selectedBarcode: item });
         }}
@@ -183,14 +197,11 @@ const styles = StyleSheet.create({
     borderWidth: 2,
     borderColor: "#D6D9E0",
   },
-  item: {
-    backgroundColor: "white",
+  linearGradient: {
     padding: 20,
     marginVertical: 10,
     marginHorizontal: 18,
     borderRadius: 15,
-    borderWidth: 2,
-    borderColor: "#1C3A77",
     shadowColor: "#000",
     shadowOffset: {
       width: 0,
@@ -201,6 +212,11 @@ const styles = StyleSheet.create({
     elevation: 5,
     fontFamily: "Actor",
     minHeight: 200,
+  },
+  item: {
+    backgroundColor: "white",
+    borderRadius: 5,
+    padding: 5,
   },
   title: {
     color: "#1C3A77",

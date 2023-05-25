@@ -17,7 +17,8 @@ import { Feather } from '@expo/vector-icons';
 import { updateBarcode, deleteBarcode } from "../utils/utils";
 import { useFonts } from "expo-font";
 import * as SplashScreen from "expo-splash-screen";
-import { MaterialIcons } from '@expo/vector-icons';
+
+import FixedButton from "../components/FixedButton";
 
 export default function SelectedScreen({ route }) {
     const navigation = useNavigation();
@@ -36,18 +37,17 @@ export default function SelectedScreen({ route }) {
     const [editMode, setEditMode] = useState(false);
     const [isLogoPickerVisible, setIsLogoPickerVisible] = useState(false);
 
-    const handleEditMode = (value) => {
-        setEditMode(value);
-    };
+    const titleColor = selectedBarcode.logo && selectedBarcode.logo.colors ? selectedBarcode.logo.colors[0] : "#1C3A77";
+    const borderColor = selectedBarcode.logo && selectedBarcode.logo.colors ? selectedBarcode.logo.colors[1] : "#1C3A77";
 
-    const handleOnPress = () => {
+    const handleEditPress = () => {
         if (editMode) {
             updateBarcode(selectedBarcode, newBarcodeTitle);
             setSelectedBarcode({ ...selectedBarcode, title: newBarcodeTitle });
             setNewBarcodeTitle("");
             setEditMode(false);
         } else {
-            handleEditMode(true);
+            setEditMode(true);
         }
     };
 
@@ -109,34 +109,44 @@ export default function SelectedScreen({ route }) {
                         <TextInput
                             multiline={true}
                             ref={titleRef}
-                            style={[styles.title, { textAlign: "center", padding: 5, borderBottomWidth: 2, borderBottomColor: "#FF6B6C" }]}
+                            style={[styles.title, {borderBottomWidth: 2, borderBottomColor: "#FF6B6C", color: titleColor }]}
                             value={newBarcodeTitle}
                             onChangeText={text => setNewBarcodeTitle(text)}
                         />
                     ) : (
-                        <Text style={[styles.title, { textAlign: "center" }]}>
+                        <Text style={[styles.title, {color: titleColor}]}>
                             {selectedBarcode.title}
                         </Text>
                     )}
 
                     <View style={styles.logoWrapper}>
                         {newBarcodeLogo && <Image source={newBarcodeLogo.source} style={styles.logo} />}
-                        
                         {editMode && !newBarcodeLogo && <View style={styles.logo}/>}
-
                         {editMode && <TouchableOpacity
                             style={styles.logoButton}
                             onPress={() => { setIsLogoPickerVisible(true) }}
                         >
                             <Feather name="image" size={45} color="white" />
                         </TouchableOpacity>}
-
                     </View>
 
                 </View>
 
+                {!editMode && <>
+                <FixedButton
+                    onPress={() => navigation.goBack()}
+                    icon="arrow-left"
+                    position={{ top: 20, left: 20 }}
+                />
+                <FixedButton
+                    onPress={setMaxBrightness}
+                    icon="sun"
+                    position={{ top: 20, right: 20 }}
+                />
+                </>}
 
-                <View style={[styles.barcodeWrapper, { borderColor: "#1C3A77", borderWidth: 2 }]}>
+
+                <View style={[styles.barcodeWrapper, {borderColor: borderColor}]}>
                     <Barcode
                         format={selectedBarcode.type}
                         value={selectedBarcode.barcode}
@@ -148,50 +158,33 @@ export default function SelectedScreen({ route }) {
                         color={"white"}
                     />
                 </View>
-        
-                <TouchableOpacity
-                    onPress={() => { deleteBarcode(selectedBarcode, navigation) }}
-                    style={[styles.deleteButton, { backgroundColor: "#FF6B6C", borderRadius: 50, width: 50, height: 50, alignItems: "center", justifyContent: "center" }]}
-                >
-                    <Feather name="trash" size={30} color="white" />
-                </TouchableOpacity>
-                {editMode ? (<>
-                    <TouchableOpacity
+
+                {!editMode ? (
+                    <FixedButton
+                        onPress={handleEditPress}
+                        icon="edit"
+                        position={{ bottom: 20, right: 80, }}
+                />
+                ) : (<>
+                    <FixedButton
                         onPress={() => { handleBarcodeUpdate(selectedBarcode) }}
-                        style={[styles.confirmButton, { backgroundColor: "#1C3A77", borderRadius: 50, width: 50, height: 50, alignItems: "center", justifyContent: "center" }]}
-                    >
-                        <Feather name="check" size={30} color="white" />
-                    </TouchableOpacity>
-                    <TouchableOpacity
+                        icon="check"
+                        position={{ bottom: 20, right: 140, }}
+                    />
+                    <FixedButton
                         onPress={handleDeclinePress}
-                        style={[styles.declineButton, { backgroundColor: "#FF6B6C", borderRadius: 50, width: 50, height: 50, alignItems: "center", justifyContent: "center" }]}
-                    >
-                        <Feather name="x" size={30} color="white" />
-                    </TouchableOpacity>
-                </>) : (
-                    <TouchableOpacity
-                        onPress={handleOnPress}
-                        style={[styles.editButton, { backgroundColor: "#1C3A77", borderRadius: 50, width: 50, height: 50, alignItems: "center", justifyContent: "center" }]}
-                    >
-                        <Feather name="edit" size={30} color="white" />
-                    </TouchableOpacity>
-                )}
+                        icon="x"
+                        position={{ bottom: 20, right: 80, }}
+                        customStyles={{ backgroundColor: "#FF6B6C" }}
+                    />
+                </>)}
 
-                {!editMode &&
-                <TouchableOpacity
-                    onPress={() => { setMaxBrightness() }}
-                    style={[styles.brightnessButton, { backgroundColor: "#1C3A77", borderRadius: 50, width: 50, height: 50, alignItems: "center", justifyContent: "center" }]}
-                >
-                    <Feather name="sun" size={30} color="white" />
-                </TouchableOpacity>}
-
-                {!editMode &&
-                <TouchableOpacity
-                    onPress={() => navigation.goBack()}
-                    style={[styles.comeBackButton, { backgroundColor: "#1C3A77", borderRadius: 50, width: 50, height: 50, alignItems: "center", justifyContent: "center" }]}
-                >
-                    <MaterialIcons name="arrow-back" size={30} color="white" />
-                </TouchableOpacity>}
+                <FixedButton
+                    onPress={() => deleteBarcode(selectedBarcode, navigation)}
+                    icon="trash"
+                    position={{ bottom: 20, right: 20 }}
+                    customStyles={{ backgroundColor: "#FF6B6C" }}
+                />
 
                 
                 <LogoPicker
@@ -216,38 +209,14 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
     },
     title: {
-        color: "#1C3A77",
         fontSize: 24,
         fontWeight: "bold",
         fontFamily: "Coda-Latin-Bold",
         marginBottom: 10,
         flexWrap: "wrap",
         flexShrink: 1,
-    },
-    deleteButton: {
-        position: "absolute",
-        bottom: 20,
-        right: 20,
-    },
-    editButton: {
-        position: "absolute",
-        bottom: 20,
-        right: 80,
-    },
-    confirmButton: {
-        position: "absolute",
-        bottom: 20,
-        right: 140,
-    },
-    declineButton: {
-        position: "absolute",
-        bottom: 20,
-        right: 80,
-    },
-    brightnessButton: {
-        position: "absolute",
-        top: 20,
-        right: 20,
+        textAlign: "center",
+        padding: 5,
     },
     titleWrapper: {
         flexDirection: "row",
@@ -263,11 +232,7 @@ const styles = StyleSheet.create({
         justifyContent: "center",
         borderRadius: 10,
         overflow: "hidden",
-    },
-    comeBackButton: {
-        position: "absolute",
-        top: 20,
-        left: 20,
+        borderWidth: 5,
     },
     logo: {
       resizeMode: 'contain',

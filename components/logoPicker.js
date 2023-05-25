@@ -15,8 +15,6 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Feather } from '@expo/vector-icons';
 import { logos } from '../assets/logos';
 import { getLogos, getImageData } from '../utils/utils';
-import { getImagePalette } from '../utils/imagePaletteExctractor';
-import { manipulateAsync } from 'expo-image-manipulator';
 
 
 export default LogoPicker = ({ visible, onLogoPress, onNoLogoPress, backAction }) => {
