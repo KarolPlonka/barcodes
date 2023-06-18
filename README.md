@@ -28,8 +28,8 @@ List Screen | Selected / Edit Screen | Add Screen
 - EAN13
 - EAN8
 - EAN5
-- CODE128
-- CODE39
+- CODE128 **?**
+- CODE39 **?**
 - ITF14
 - UPC
 - UPCE
