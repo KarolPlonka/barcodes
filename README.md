@@ -43,7 +43,7 @@ List Screen | Selected / Edit Screen | Add Screen
   - [expo-barcode-scanner](https://docs.expo.dev/versions/latest/sdk/bar-code-scanner/)  
 
 
-## Dev instalation
+## Dev installation
 
 1. Clone the repository. <br>
 `git clone https://github.com/KarolPlonka/barcode/`
