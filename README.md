@@ -3,6 +3,8 @@ Keep all your barcodes in one place.
 
 Add new barcode to your colletcion by scaning it with your camera or create generate a new one.
 
+![List Screen](preview\ListScreen.gif "Title")
+
 ## Platforms
 ✅ Android <br>
 ✅ IOS
