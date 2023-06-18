@@ -5,6 +5,13 @@ Add new barcode to your colletcion by scaning it with your camera or create gene
 
 ![List Screen](preview/ListScreen.gif)
 
+## Add new Barcode
+![List Screen](preview/AddScreen.gif)
+
+## Single Barcode Preview / Edit
+![List Screen](preview/SelectedScreen.gif)
+
+
 ## Platforms
 ✅ Android <br>
 ✅ IOS
