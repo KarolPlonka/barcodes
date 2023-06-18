@@ -3,7 +3,7 @@ Keep all your barcodes in one place.
 
 Add new barcode to your colletcion by scaning it with your camera or create generate a new one.
 
-## Screens Preview
+## App Preview
 List Screen | Selected / Edit Screen | Add Screen
 :-------------------------:|:-------------------------:|:-------------------------:
 ![](preview/ListScreen.gif)  |  ![](preview/SelectedScreen.gif)  |  ![](preview/AddScreen.gif)
